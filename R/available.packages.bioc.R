@@ -18,13 +18,13 @@ available.packages.cran <- function(prefix=getOption("repos")) {
 
 
 #' Download a current list of available Bioconductor packages
-#'
-#' This is a wrapper around available.packages, with default options set.
+#' 
+#' This is a wrapper around \dQuote{available.packages}, with default options set.
 #' @param prefix the URL prefix, eg: \url{http://mirror.aarnet.edu.au/pub/CRAN}
 #' @return See \code{\link[utils]{available.packages}}
 #' @seealso \code{\link[utils]{available.packages}}
 #' @author Mark Cowley
-#' @export
+#' @export 
 #' @examples
 #' options(BioC_mirror="http://mirror.aarnet.edu.au/pub/bioconductor")
 #' available.packages.bioc()
