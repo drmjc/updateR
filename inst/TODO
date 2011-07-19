@@ -1,0 +1,3 @@
+during R CMD CHECK 
+- print the number of warnings
+- add a show.warnings flag to show the logs if there are any warnings
