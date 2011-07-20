@@ -7,8 +7,8 @@ Author: Mark Cowley <m.cowley@garvan.org.au>
 Maintainer: Mark Cowley <m.cowley@garvan.org.au>
 Description: A collection of functions that enable R package maintainers to build and update packages. A shell script essentially runs R CMD
     BUILD and R CMD INSTALL when required. Tools for refreshing a currently loaded library are included, as well as updating meta-packages.
-Depends: R (>= 2.12.0), codetools
-Suggests: roxygen, Rd2roxygen
+Depends: R (>= 2.12.0), codetools, roxygen
+Suggests: Rd2roxygen
 URL: http://pwbc.garvan.unsw.edu.au
 License: GPL-2
 LazyLoad: yes

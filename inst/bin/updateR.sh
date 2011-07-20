@@ -153,7 +153,7 @@ if [ $ROXYGENIZE -eq 0 ]; then
 	
 	# backup those files that roxygen will edit
 	# rm $PACKAGE_PATH/man/*Rd
-	mv -f $PACKAGE_PATH/man/*Rd ${RDTMP} # may not exist
+	[ -d $PACKAGE_PATH/man ] && mv -f $PACKAGE_PATH/man/*Rd ${RDTMP} # may not exist
 	cp -f $PACKAGE_PATH/DESCRIPTION ${RDTMP} # must exist
 	if [ -f $PACKAGE_PATH/NAMESPACE ]; then cp -f $PACKAGE_PATH/NAMESPACE ${RDTMP}; fi # may not exist
 	
