@@ -6,6 +6,7 @@
 \description{Expand a file path to an absolute path}
 \details{This function has more capabilities than path.expand, in that relative
 paths (. and ./ and ../) are also expanded.}
+\value{A character vector containing the full paths to files or directories given by \dQuote{file}}
 \author{Mark Cowley}
 \arguments{\item{path}{A character vector of paths to files or directories}
 \item{trailing.slash}{logical. if TRUE, and path is a directory, include a trailing \dQuote{/}}

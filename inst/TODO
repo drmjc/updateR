@@ -1,3 +1,5 @@
 during R CMD CHECK 
 - print the number of warnings
 - add a show.warnings flag to show the logs if there are any warnings
+- control the level of hiding in updateR. default is errors, but seeing warnings, and or notes could be useful
+- refactor edit.src.file to prevent an R CMD CHECK warning.

@@ -1,7 +1,8 @@
 \name{import.function}
 \alias{import.function}
 \title{Search for & import the function definition from within a source file.}
-\usage{import.function(func, src.root=getOption("src.root"), src.files, import.header=TRUE, exclude.patterns=c("~", ".Rcheck", ".git", ".svn"))
+\usage{import.function(func, src.root=getOption("src.root"), src.files, import.header=TRUE,
+    exclude.patterns=c("~", ".Rcheck", ".git", ".svn"))
 }
 \description{Search for & import the function definition from within a source file.}
 \details{I usually write detailed comment headers before functions in source code files.

@@ -1,16 +1,22 @@
 Package: updateR
 Type: Package
 Title: Package development toolkit
-Version: 1.0
-Date: 2011-07-04
+Version: 1.0.1
+Date: 2011-08-01
 Author: Mark Cowley <m.cowley@garvan.org.au>
 Maintainer: Mark Cowley <m.cowley@garvan.org.au>
-Description: A collection of functions that enable R package maintainers to build and update packages. A shell script essentially runs R CMD
-    BUILD and R CMD INSTALL when required. Tools for refreshing a currently loaded library are included, as well as updating meta-packages.
+Description: A collection of functions that enable R package
+    maintainers to build and update packages. A shell script
+    essentially runs roxygen, R CMD CHECK & BUILD & INSTALL. Tools for
+    refreshing a currently loaded library are included, as well as
+    finding the dependencies of any function.
 Depends: R (>= 2.12.0), codetools, roxygen
 Suggests: Rd2roxygen
 URL: http://pwbc.garvan.unsw.edu.au
 License: GPL-2
 LazyLoad: yes
-Collate: 'available.packages.bioc.R' 'edit.func.R' 'find.src.file.R' 'get.full.path.R' 'get.function.dependencies.R' 'import.function.R'
-    'is.dir.R' 'list.my.packages.R' 'mjc2roxygen.R' 'relibrary.R' 'trim.R' 'unlibrary.R' 'updateR.R' 'which.package.R'
+Collate: 'available.packages.bioc.R' 'edit.func.R' 'find.src.file.R'
+    'get.full.path.R' 'get.function.dependencies.R' 'import.function.R'
+    'is.dir.R' 'list.my.packages.R' 'mjc2roxygen.R' 'relibrary.R'
+    'trim.R' 'unlibrary.R' 'updateR-package.R' 'updateR.R'
+    'which.package.R'

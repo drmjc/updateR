@@ -1,36 +1,34 @@
-# Function to tell you which package a function came from.
-#
-# Details:
-#	Given a function, return which package(s) it was defined in. Most packages now have
-#	 namespaces, so functions can either be exported, or not.
-#	If your function is exported in a namespace, then no problems.
-#	If you function is not exported (usually hidden functions starting with ., 
-#	 eg: '.gsea.get.classes.index.html' from metaGSEA, 
-#	 then there's no facility in native R to determine this (AFAICT).
-#	 By searching through a collection of source code, you may find the file that contains the function,
-#	 and thus which package its from.
-#	If your function is hidden, then you must use its quoted name when passing to func=".my.hidden.function",
-#	 otherwise doing this: func=.my.hidden.function, will cause the R interpreter to complain that
-#	 it can't find .my.hidden.function.
-#
-# Parameters:
-#	func: either the quoted function name (eg "plot"), or the function's code (eg plot). Can be a character vector of multiple function's names.
-#	unique: if TRUE only return the first result (some functions are defined in multiple packages)
-#	src.root: the root folder containing all your R packages under development.
-#	verbose: TRUE/FALSE
-#
-# Value:
-#	a vector of package names, 1 per function in 'func'
-#
-# Examples:
-# # not run
-# which.package(plot)
-# which.package("plot")
-#
-# Mark Cowley, 6th Nov 2006
-# 2011-04-08: dropped the support for similar -- apropos should be used to identify similar function names
-# 2011-04-08: added src.root & the ability to find functions within code.
-# 2011-04-08: changed verbose to FALSE
+#' Function to tell you which package a function came from.
+#' 
+#' Given a function, identify which package(s) it was defined in. Most packages
+#' now have namespaces, so functions can either be exported, or not.
+#' If your function is exported in a namespace, then no problems.
+#' If your function is not exported (usually hidden functions starting with \sQuote{.},
+#' eg: \code{.gsea.get.classes.index.html} from \code{metaGSEA},
+#' then there's no facility in native \R to determine this (AFAICT).
+#' By searching through a collection of source code, you may find the file
+#' that contains the function, and thus which package its from.
+#' @note 
+#' If your function is \emph{hidden} (ie, starts with a dot), then you must use 
+#' its quoted name when passing to \code{func=".my.hidden.function"},
+#' otherwise doing this: \code{func=.my.hidden.function}, will cause the \R
+#' interpreter to complain that it can't find \code{.my.hidden.function}.
+#'
+#' @param func either the quoted function name (eg \dQuote{plot}), or the function's
+#'   name (eg \code{plot}). Can be a character vector of multiple function's names.
+#' @param unique logical: if \code{TRUE}, only return the first result (some functions are
+#'   defined in multiple packages), if \code{FALSE} and > 1 instances are found, then all
+#' will be returned
+#' @param src.root the root folder containing all your R packages under
+#'   development.
+#' @param verbose logical
+#' @return a vector of package names, 1 per function in \code{func}
+#' @author Mark Cowley
+#' @examples
+#' \dontrun{
+#' which.package(plot)
+#' }
+#' @export
 which.package <- function(func, unique=FALSE, src.root=getOption("src.root"), verbose=FALSE) {
 
 	# recurse if necessary.
@@ -92,3 +90,8 @@ which.package <- function(func, unique=FALSE, src.root=getOption("src.root"), ve
 		return( package.name )
 	}
 }
+# CHANGELOG
+# 2006-11-06: version 1
+# 2011-04-08: dropped the support for similar -- apropos should be used to identify similar function names
+# 2011-04-08: added src.root & the ability to find functions within code.
+# 2011-04-08: changed verbose to FALSE

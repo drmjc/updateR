@@ -17,13 +17,14 @@
 #'          default will be `pkg'-package.R
 #' @param usage logical: whether to include the usage section in the output
 #'    \code{roxygen} can auto-generate these.
-#' @value NULL (but the process of conversion will be printed on screen)
-#' @note set verbatim{options(roxygen.comment = "##' ")} to signify that these
-#'   roxygen comments are auto-generated, and use \verbatim{"#' "} for 
+#' @return NULL (but the process of conversion will be printed on screen)
+#' @note set \code{options(roxygen.comment = "##' ")} to signify that these
+#'   roxygen comments are auto-generated, and use \code{"#' "} for 
 #'   manually generated comments.
 #' @examples
-#'  # not run
-#'  # mjc2roxygen("~/src/R/mjcdev")
+#'  \dontrun{
+#'  mjc2roxygen("~/src/R/mjcdev")
+#' }
 #' @export
 mjc2roxygen <- function (pkg, nomatch, usage = FALSE) {
 	require(updateR)
@@ -102,21 +103,6 @@ mjc2roxygen <- function (pkg, nomatch, usage = FALSE) {
 	}
 }
 
-#' Trim whitespace
-#'
-#' Trim the whitespace from front and back of the words in a vector.
-#'
-#' @param x [character] a character vector
-#' @return character vector of trimmed text
-#' @author Mark Cowley, 2009-08-19
-#' @export
-#'
-trim <- function(x) {
-	x <- sub("^[ \t]+", "", x)
-	x <- sub("[ \t]+$", "", x)
-	x
-}
-
 
 #' Parse a function header comment into roxygen list
 #' @param hdr a character vector containing the parsed header.
@@ -124,12 +110,22 @@ trim <- function(x) {
 #' @param format default format for the function
 #' @param keywords default keywords for the function
 #' @param default.author the default author. This is ignored if author is set
-#' @value 
-#' @seealso \code{\link[Rd2roxygen]{parse_file}}, \code{\link{import.function.header}}, \code{\link{import.function.header.from.src.file}}
+#' @return a roxygenized named list, with names: \sQuote{desc}, \sQuote{params}, 
+#' \sQuote{details}, \sQuote{examples}, \sQuote{usage}, \sQuote{author}, 
+#' \sQuote{value}, \sQuote{docType}, \sQuote{format}, \sQuote{note}, 
+#' \sQuote{aliases}, \sQuote{keywords}.
+#' @seealso \code{\link[Rd2roxygen]{parse_file}}, \code{\link{import.function.header}}, 
+#' \code{\link{import.function.header.from.src.file}}
 #' @examples
 #' hdr <- import.function.header.from.src.file("mjcheader2roxygen", "~/src/R/updateR/R/mjc2roxygen.R")
 #' rox <- mjcheader2roxygen(hdr)
 #' str(rox)
+#' \dontrun{
+#' # copy an mjc-style comment header from a src file
+#' hdr <- pbpaste()
+#' x <- Rd2roxygen::create_roxygen(mjcheader2roxygen(hdr))
+#' writeLines(x, pipe("pbcopy", "w"))
+#' }
 #' @export
 mjcheader2roxygen <- function(hdr, docType="", format="", keywords="", default.author="Mark Cowley") {
 	# is the header already roxygenized?

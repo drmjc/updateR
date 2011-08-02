@@ -12,8 +12,9 @@ scripts.
 This is my version of \code{\link[Rd2roxygen]{Rd2roxygen}}, and 90\\% of it is
 from Rd2roxygen. It parses all functions, within all source files in a package,
 and inserts roxygenized versions of those same comments.}
-\note{set verbatim{options(roxygen.comment = "##' ")} to signify that these
-roxygen comments are auto-generated, and use \verbatim{"#' "} for 
+\value{NULL (but the process of conversion will be printed on screen)}
+\note{set \code{options(roxygen.comment = "##' ")} to signify that these
+roxygen comments are auto-generated, and use \code{"#' "} for 
 manually generated comments.}
 \arguments{\item{pkg}{the root directory of the package}
 \item{nomatch}{PROBABLY HAS NO EFFECT IN MY CODE
@@ -24,6 +25,7 @@ default will be `pkg'-package.R}
 \item{usage}{logical: whether to include the usage section in the output
 \code{roxygen} can auto-generate these.}
 }
-\examples{# not run
-# mjc2roxygen("~/src/R/mjcdev")}
+\examples{\dontrun{
+mjc2roxygen("~/src/R/mjcdev")
+}}
 

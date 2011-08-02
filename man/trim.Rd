@@ -1,24 +1,17 @@
 \name{trim}
 \alias{trim}
-\title{Trim...}
+\title{Trim the whitespace from front and back of the words in a vector.}
 \usage{trim(x)
-trim(x)
 }
-\description{Trim}
-\details{\code{trim}: Trim the whitespace from front and back of the words in a vector.
-
-\code{trim}: Trim the whitespace from front and back of the words in a vector.
-
-
-}
-\value{\code{trim}: character vector of trimmed text
-
-\code{trim}: character vector of trimmed text
-
-
-}
+\description{Trim the whitespace from front and back of the words in a vector.}
+\value{a character vector of trimmed text}
 \author{Mark Cowley, 2009-08-19}
-\arguments{\item{x}{[character] a character vector}
+\arguments{\item{x}{a character vector}
 }
-\alias{trim}
+\examples{trim("   ABC")
+# "ABC"
+trim("DEF   ")
+# "DEF"
+trim("  ABC  ")
+# "ABC"}
 

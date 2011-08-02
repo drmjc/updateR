@@ -69,6 +69,6 @@ find.src.file <- function(func, src.root=getOption("src.root"), src.files=NULL, 
 #' @return a vector of file paths, 
 #' @author Mark Cowley
 #' @export
-which.src.file <- function(func, src.root=getOption("src.root"), src.files=NULL, exclude.patterns=c("~", ".Rcheck", ".git", ".svn")) {
-	find.src.file(func, src.root, src.files=src.files, exclude.patterns=exclude.patterns)
+which.src.file <- function(func, src.root=getOption("src.root"), src.files=NULL, exclude.patterns=c("~", ".Rcheck", ".git", ".svn"), unique=TRUE) {
+	find.src.file(func, src.root, src.files=src.files, exclude.patterns=exclude.patterns, unique=unique)
 }

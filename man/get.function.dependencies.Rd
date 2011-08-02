@@ -1,7 +1,8 @@
 \name{get.function.dependencies}
 \alias{get.function.dependencies}
 \title{Determine all the dependencies of a function from a list of packages.}
-\usage{get.function.dependencies(fun, packages=c(list.my.packages(src.root = getOption("src.root")), ".GlobalEnv"), verbose=FALSE)
+\usage{get.function.dependencies(fun, packages=c(list.my.packages(src.root = getOption("src.root")),
+    ".GlobalEnv"), verbose=FALSE)
 }
 \description{Determine all the dependencies of a function from a list of packages.}
 \details{For a given function, exhaustively determine which functions are in turn

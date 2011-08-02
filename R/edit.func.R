@@ -8,11 +8,11 @@
 #' @return nothing. The side effect is that an R source file is opened in an editor.
 #' @author Mark Cowley, 26/2/07
 #' @export
-edit.src.file <- function(func, src.root=getOption("src.root"), src.files=NULL, editor="open -a TextMate", exclude.patterns=c("~", ".Rcheck", ".git", ".svn")) {
+edit.src.file <- function(func, src.root=getOption("src.root"), src.files=NULL, editor=NULL, exclude.patterns=c("~", ".Rcheck", ".git", ".svn")) {
 	if ( !is.character(func) )
 		func <- as.character(substitute(func))
 	if( is.null(editor) )
-		editor <- options("editor")
+		editor <- getOption("editor")
 
 	f <- find.src.file(func, src.root, src.files, exclude.patterns=exclude.patterns)
 	if( length(f) > 0 ) {

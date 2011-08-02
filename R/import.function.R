@@ -36,7 +36,7 @@ import.function <- function(func, src.root=getOption("src.root"), src.files=NULL
 #'	1. function header preceded by comment block preceded by a blank line, or top of file
 #'	2. function header preceded by (blank line or top of file) -> no comment has been written.
 #'	
-#' @param func a function name, or the function's body. eg \code{plot} or \code{\dQuote{plot}}
+#' @param func a function name, or the function's body. eg \code{plot} or \dQuote{\code{plot}}
 #' @param f The path to the file containing the function.
 #' @param import.header search for & import the header comments. TRUE/FALSE
 #' @return This code extracts the src code, and the header, or returns ""
@@ -102,7 +102,7 @@ import.function.from.src.file <- function(func, f, import.header=TRUE) {
 #' @param func a function name, or the function's code
 #' @param src.root The parent folder of source code
 #' @param src.files an optional vector of filenames to search within
-#' @strip.comment.char logical: if TRUE, strip the leading comment characters. 
+#' @param strip.comment.char logical: if TRUE, strip the leading comment characters. 
 #' @param exclude.patterns vector of patterns passed to grep for files to exclude
 #' @return This code extracts the src code, and the header, or returns ""
 #' @export
@@ -133,8 +133,7 @@ import.function.header <- function(func, src.root=getOption("src.root"), src.fil
 #'	
 #' @param func a function name, or the function's code
 #' @param f The path to the file containing the function.
-#' @strip.comment.char logical: if TRUE, strip the leading comment characters. 
-#' @param exclude.patterns vector of patterns passed to grep for files to exclude
+#' @param strip.comment.char logical: if TRUE, strip the leading comment characters. 
 #' @return This code extracts the src code, and the header, or returns ""
 #' @export
 #' @author Mark Cowley, 2009-10-13

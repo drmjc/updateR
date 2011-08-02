@@ -1,8 +1,10 @@
 \name{updateR}
 \alias{updateR}
 \title{A flexible R package updater.}
-\usage{updateR(package, src.root=getOption("src.root"), lib.loc, warn.conflicts=TRUE, roxygen=FALSE, check=FALSE, source=TRUE, binary=FALSE, winbinary=FALSE,
-    install=TRUE, no.vignettes=FALSE, no.manual=FALSE, no.docs=FALSE)
+\usage{updateR(package, src.root=getOption("src.root"), lib.loc, warn.conflicts=TRUE,
+    roxygen=FALSE, check=FALSE, source=TRUE, binary=FALSE,
+    winbinary=FALSE, install=TRUE, no.vignettes=FALSE, no.manual=FALSE,
+    no.docs=FALSE)
 }
 \description{A flexible R package updater.
 This function can be used to roxygenize, check, build source/binary/windows binary, install
@@ -30,7 +32,7 @@ roxygen comments. Try the \code{\link[Rd2roxygen]{Rd2roxygen}} package for conve
 internal errors.
 
 in case of epic fail: 
-\verbatim{
+\verb{
 bash$ ~/src/R/updateR/inst/bin/updateR.sh ~/src/R/updateR
 R> relibrary("updateR")
 }}
@@ -51,9 +53,11 @@ is the package that will be installed.}
 \item{no.manual}{logical: if \dQuote{TRUE}, turn off the creation of PDF manuals}
 \item{no.docs}{if TRUE, logical: if \dQuote{TRUE}, turn off the creation of documentation}
 }
-\examples{# build a source package, and install.
+\examples{\dontrun{
+# build a source package, and install.
 updateR("updateR", "~/src/R")
 updateR("updateR", "~/src/R", source=TRUE, install=TRUE)
 # roxygenize, check, and then build a source package, and install.
-updateR("updateR", "~/src/R", roxygen=TRUE, check=TRUE, source=TRUE, install=TRUE)}
+updateR("updateR", "~/src/R", roxygen=TRUE, check=TRUE, source=TRUE, install=TRUE)
+}}
 

@@ -95,10 +95,12 @@ get.function.dependencies <- function( fun,
 #' @author Mark Cowley, 2011-04-07
 #' @export
 #' @examples
+#' \dontrun{
 #' f <- tempfile()
-#' get.function.dependencies2file(fun=updateR, file=f)
-#' get.function.dependencies2file(fun=updateR, file=f, src.files=NULL, verbose=TRUE)
+#' get.function.dependencies2file(fun=edit.src.file, file=f)
+#' get.function.dependencies2file(fun=edit.src.file, file=f, src.files=NULL, verbose=TRUE)
 #' unlink(f)
+#' }
 #'
 get.function.dependencies2file <- function(	fun,
 											file, 

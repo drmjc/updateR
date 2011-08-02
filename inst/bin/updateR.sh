@@ -1,15 +1,21 @@
 #!/bin/bash
 #
-# Generic shell script to build and install R packages (V2).
-# For a given package, do an R CMD build, then R CMD install.
+# Generic shell script to build and install R packages.
+# For a given package, you can generate roxygen documentation, then do an 
+# R CMD CHECK, R CMD build (source/binary/windows), then R CMD install.
 # All you need is the path to the package itself.
 #
 # usage:
-#	updateR.sh /path/to/package [/path/to/R/library]
+#	updateR.sh [options] /path/to/package
 #
 # todo: implement a versioning updater system
+# todo: update the datestamp in the DESCRIPTION file
+# todo: warn about running roxygen if it's not listed as a dependency in the DESCRIPTION
 #
-# Mark Cowley, 2008-11-10
+# Mark Cowley
+#
+# CHANGELOG:
+# 2008-11-10: v1
 # 2009-06-15: made this cross platform by choosing the R_LIB dependant upon the underlying O/S
 # 2009-10-12: made this a generic installer for all packages.
 # 2009-12-02: major revisions. now far fewer arguments hardwired.
@@ -21,7 +27,8 @@ usage() {
 usage:
     updateR.sh -h
     updateR.sh [options] </path/to/package>
-    updateR.sh [-l </usr/local/R/library>] [-r] [-s] [-c] [-b] [-w] [-i] </path/to/package>
+    updateR.sh [-l </usr/local/R/library>] [-r] [-c] [-s] [-b] [-w] [-g] [-m] [-d] [-i] </path/to/package>
+
 OPTIONS
 -r: roxygenize the package.
 -c: R CMD CHECK the package.
@@ -90,6 +97,7 @@ fi
 # make sure we have pdflatex, otherwise specify --no-manual
 hash pdflatex 2>&- || OPTIONS="${OPTIONS} --no-manual"
 
+# we need to do at least 1 action
 if [ $ROXYGENIZE -eq 1 -a $CHECK -eq 1 -a $SOURCE -eq 1 -a $BINARY -eq 1 -a $WINBINARY -eq 1 -a $INSTALL -eq 1 ]; then
 	echo "You must specify at least one action: -r, -c, {-b,-s,-w}, -i"
 	usage

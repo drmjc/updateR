@@ -1,7 +1,8 @@
 \name{find.src.file}
 \alias{find.src.file}
 \title{Find the source file for a given function.}
-\usage{find.src.file(func, src.root=getOption("src.root"), src.files, exclude.patterns=c("~", ".Rcheck", ".git", ".svn"), unique=TRUE)
+\usage{find.src.file(func, src.root=getOption("src.root"), src.files,
+    exclude.patterns=c("~", ".Rcheck", ".git", ".svn"), unique=TRUE)
 }
 \description{Find the source file for a given function.}
 \details{Given a directory of R packages under development (under src.root), or a vector of

@@ -1,7 +1,8 @@
 \name{which.src.file}
 \alias{which.src.file}
 \title{Find the source file for a given function.}
-\usage{which.src.file(func, src.root=getOption("src.root"), src.files, exclude.patterns=c("~", ".Rcheck", ".git", ".svn"))
+\usage{which.src.file(func, src.root=getOption("src.root"), src.files,
+    exclude.patterns=c("~", ".Rcheck", ".git", ".svn"), unique=TRUE)
 }
 \description{Find the source file for a given function.
 This is a wrapper around \code{\link{find.src.file}}}

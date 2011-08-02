@@ -3,7 +3,13 @@
 #' This is a wrapper around available.packages, with default options set.
 #'
 #' @param prefix the URL prefix, eg: \url{http://mirror.aarnet.edu.au/pub/CRAN}
-#' @return See \code{\link[utils]{available.packages}}
+#' @return
+#' Same as the output from \code{\link[utils]{available.packages}}, but only listing
+#' packages from CRAN: A \code{matrix} with one row per package, row names the package names and
+#'   column names \dQuote{Package}, \dQuote{Version}, \dQuote{Priority}, \dQuote{Depends},
+#'   \dQuote{Imports}, \dQuote{LinkingTo}, \dQuote{Suggests}, \dQuote{Enhances},
+#'   \dQuote{OS_type}, \dQuote{License}, \dQuote{File} and \dQuote{Repository}.  Additional
+#'   columns can be specified using the \sQuote{fields} argument.
 #' @seealso \code{\link[utils]{available.packages}}
 #' @export
 #' @author Mark Cowley
@@ -21,7 +27,13 @@ available.packages.cran <- function(prefix=getOption("repos")) {
 #' 
 #' This is a wrapper around \dQuote{available.packages}, with default options set.
 #' @param prefix the URL prefix, eg: \url{http://mirror.aarnet.edu.au/pub/CRAN}
-#' @return See \code{\link[utils]{available.packages}}
+#' @return
+#' Same as the output from \code{\link[utils]{available.packages}}, but only listing
+#' packages from Bioconductor: A \code{matrix} with one row per package, row names the package names and
+#'   column names \dQuote{Package}, \dQuote{Version}, \dQuote{Priority}, \dQuote{Depends},
+#'   \dQuote{Imports}, \dQuote{LinkingTo}, \dQuote{Suggests}, \dQuote{Enhances},
+#'   \dQuote{OS_type}, \dQuote{License}, \dQuote{File} and \dQuote{Repository}.  Additional
+#'   columns can be specified using the \sQuote{fields} argument.
 #' @seealso \code{\link[utils]{available.packages}}
 #' @author Mark Cowley
 #' @export 

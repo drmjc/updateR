@@ -10,7 +10,7 @@ scenarios:
 2. function header preceded by (blank line or top of file) -> no comment has been written.}
 \value{This code extracts the src code, and the header, or returns ""}
 \author{Mark Cowley, 2011-06-21}
-\arguments{\item{func}{a function name, or the function's body. eg \code{plot} or \code{\dQuote{plot}}}
+\arguments{\item{func}{a function name, or the function's body. eg \code{plot} or \dQuote{\code{plot}}}
 \item{f}{The path to the file containing the function.}
 \item{import.header}{search for & import the header comments. TRUE/FALSE}
 }

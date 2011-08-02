@@ -1,7 +1,8 @@
 \name{get.function.dependencies2file}
 \alias{get.function.dependencies2file}
 \title{Determine all the dependencies of a function from a list of packages and src files and export them into a file...}
-\usage{get.function.dependencies2file(fun, file, packages=c(list.my.packages(src.root = getOption("src.root")), ".GlobalEnv"), src.files, verbose=FALSE)
+\usage{get.function.dependencies2file(fun, file, packages=c(list.my.packages(src.root =
+    getOption("src.root")), ".GlobalEnv"), src.files, verbose=FALSE)
 }
 \description{Determine all the dependencies of a function from a list of packages and src files and export them into a file}
 \details{If you've ever wanted to give someone a single function from within a package full of code, then you've probably
@@ -20,8 +21,10 @@ automatically loaded at startup.}
 within packages.}
 \item{verbose}{logical: verbose output?}
 }
-\examples{f <- tempfile()
-get.function.dependencies2file(fun=updateR, file=f)
-get.function.dependencies2file(fun=updateR, file=f, src.files=NULL, verbose=TRUE)
-unlink(f)}
+\examples{\dontrun{
+f <- tempfile()
+get.function.dependencies2file(fun=edit.src.file, file=f)
+get.function.dependencies2file(fun=edit.src.file, file=f, src.files=NULL, verbose=TRUE)
+unlink(f)
+}}
 

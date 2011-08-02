@@ -1,7 +1,8 @@
 \name{edit.src.file}
 \alias{edit.src.file}
 \title{Search for the...}
-\usage{edit.src.file(func, src.root=getOption("src.root"), src.files, editor="open -a TextMate", exclude.patterns=c("~", ".Rcheck", ".git", ".svn"))
+\usage{edit.src.file(func, src.root=getOption("src.root"), src.files, editor,
+    exclude.patterns=c("~", ".Rcheck", ".git", ".svn"))
 }
 \description{Search for the .R file that contains a function, and open it in an editor.}
 \value{nothing. The side effect is that an R source file is opened in an editor.}

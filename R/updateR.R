@@ -27,7 +27,7 @@
 #' internal errors.
 #'
 #' in case of epic fail: 
-#' \verbatim{
+#' \verb{
 #'    bash$ ~/src/R/updateR/inst/bin/updateR.sh ~/src/R/updateR
 #'       R> relibrary("updateR")
 #' }
@@ -50,11 +50,13 @@
 #' @seealso \code{\link{relibrary}}, \code{\link[roxygen]{roxygenize}}, \code{\link{.Rprofile}}, \code{\link{install.packages}}
 #' @author Mark Cowley
 #' @examples 
+#' \dontrun{
 #' # build a source package, and install.
 #' updateR("updateR", "~/src/R")
 #' updateR("updateR", "~/src/R", source=TRUE, install=TRUE)
 #' # roxygenize, check, and then build a source package, and install.
 #' updateR("updateR", "~/src/R", roxygen=TRUE, check=TRUE, source=TRUE, install=TRUE)
+#' }
 updateR <- function(package, src.root=getOption("src.root"), lib.loc=NULL, warn.conflicts = TRUE, 
 	roxygen=FALSE,
 	check=FALSE,

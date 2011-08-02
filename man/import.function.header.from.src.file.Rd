@@ -12,6 +12,6 @@ scenarios:
 \author{Mark Cowley, 2009-10-13}
 \arguments{\item{func}{a function name, or the function's code}
 \item{f}{The path to the file containing the function.}
-\item{exclude.patterns}{vector of patterns passed to grep for files to exclude}
+\item{strip.comment.char}{logical: if TRUE, strip the leading comment characters.}
 }
 

@@ -29,8 +29,14 @@
 #' @param warn.conflicts If \code{TRUE}, warnings are printed about conflicts
 #'   from reattaching of the package, unless that package contains an object
 #'   \code{.conflicts.OK}. Default value is \code{FALSE}.
+#' @param unload logical: whether or not to attempt to
+#'        unload the namespace when a package is being detached.  If
+#'        the package has a namespace and \code{unload} is \code{TRUE}, then
+#'        \code{\link[base]{detach}} will attempt to unload the namespace \emph{via}
+#'        \code{\link[base]{unloadNamespace}}: if the namespace is imported by another
+#'        namespace or \code{unload} is \code{FALSE}, no unloading will occur.
 #' @param force logical: See \code{\link{detach}}.
-#' @param ... Any other arguments that \code{\link[base]{library}} accepts.
+#' @param \dots Any other arguments that \code{\link[base]{library}} accepts.
 #' @author Henrik Bengtsson, \email{henrikb@@braju.com},
 #'   \url{http://www.braju.com/R/}, updated by Mark Cowley.
 #' @seealso See \code{\link[base]{library}}.
