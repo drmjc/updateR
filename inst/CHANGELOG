@@ -1,2 +1,4 @@
 v1.0.1 (2011-08-01)
 roxygen edits, (especially which.package)
+v1.0.2 (2011-08-25)
+updates to updateR.sh to handle Rd files beginning with dot
