@@ -15,6 +15,7 @@ columns can be specified using the \sQuote{fields} argument.}
 \author{Mark Cowley}
 \arguments{\item{prefix}{the URL prefix, eg: \url{http://mirror.aarnet.edu.au/pub/CRAN}}
 }
-\examples{options(BioC_mirror="http://mirror.aarnet.edu.au/pub/bioconductor")
-available.packages.bioc()}
+\examples{# options(BioC_mirror="http://mirror.aarnet.edu.au/pub/bioconductor")
+tmp <- available.packages.bioc()
+str(tmp)}
 
