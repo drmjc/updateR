@@ -136,7 +136,8 @@ get.function.dependencies2file <- function(	fun,
 	# these get stripped out during source().
 	for(i in which(is.na(files))) {
 		# we'd better hope there's a function definition for these within .GlobalEnv, or
-		# we are out of luck			func <- funcs[i]
+		# we are out of luck			
+		func <- funcs[i]
 		if( exists(func, where=1) ) {
 			writeLines(sprintf("###\n### from %s\n###\n", ".GlobalEnv"), f)
 			func.code <- get(func, pos=1)
