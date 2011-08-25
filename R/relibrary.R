@@ -123,7 +123,6 @@ relibrary <- function(package, character.only=FALSE, warn.conflicts=TRUE, unload
 			library(pkg.dependencies[i], character.only=TRUE)
 	}
 }
-
 ############################################################################
 # HISTORY:
 # 2011-07-04:
