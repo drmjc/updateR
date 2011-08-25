@@ -38,8 +38,9 @@ available.packages.cran <- function(prefix=getOption("repos")) {
 #' @author Mark Cowley
 #' @export 
 #' @examples
-#' options(BioC_mirror="http://mirror.aarnet.edu.au/pub/bioconductor")
-#' available.packages.bioc()
+#' # options(BioC_mirror="http://mirror.aarnet.edu.au/pub/bioconductor")
+#' tmp <- available.packages.bioc()
+#' str(tmp)
 available.packages.bioc <- function(prefix=getOption("BioC_mirror")) {
 	# This works OK but can be noisy
 	# source("http://bioconductor.org/biocLite.R")
@@ -64,8 +65,6 @@ available.packages.bioc <- function(prefix=getOption("BioC_mirror")) {
 	res <- do.call(rbind, bioc)
 	res
 }
-# tmp <- available.packages.bioc()
-# str(tmp)
 # CHANGELOG
 # 2011-04-07: v1
 
