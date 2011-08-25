@@ -161,9 +161,9 @@ if [ $ROXYGENIZE -eq 0 ]; then
 	
 	# backup those files that roxygen will edit
 	# rm ${PACKAGE_PATH}/man/*Rd
-	cp -f ${PACKAGE_PATH}/DESCRIPTION ${RDTMP} # must exist
-	[ -d ${PACKAGE_PATH}/man ] && mkdir ${RDTMP}/tmp && mv -f ${PACKAGE_PATH}/man ${RDTMP}/tmp # may not exist
-	[ -f ${PACKAGE_PATH}/NAMESPACE ] && cp -f ${PACKAGE_PATH}/NAMESPACE ${RDTMP} # may not exist
+	cp -f ${PACKAGE_PATH}/DESCRIPTION ${RDTMP}
+	[ -f ${PACKAGE_PATH}/NAMESPACE ] && cp -f ${PACKAGE_PATH}/NAMESPACE ${RDTMP}
+	[ -d ${PACKAGE_PATH}/man ] && mkdir ${RDTMP}/man && cp -a ${PACKAGE_PATH}/man/*Rd ${PACKAGE_PATH}/man/.*Rd ${RDTMP}/man
 	
 	# roxygenize
 	R CMD roxygen -d ${PACKAGE_PATH} > $OUT 2>&1
@@ -173,26 +173,27 @@ if [ $ROXYGENIZE -eq 0 ]; then
 		cat >&2 $OUT
 		rm $OUT
 		echo >&2 "roxygenize failed. restoring previous DESCRIPTION, NAMESPACE, Rd files"
-		rm -rf ${PACKAGE_PATH}/man
-		mv -f ${RDTMP}/man         ${PACKAGE_PATH}/man
-		cp -f ${RDTMP}/DESCRIPTION ${PACKAGE_PATH}
-		cp -f ${RDTMP}/NAMESPACE   ${PACKAGE_PATH}
+		rm -rf ${PACKAGE_PATH}/man/*Rd ${PACKAGE_PATH}/man/.*Rd ${PACKAGE_PATH}/NAMESPACE ${PACKAGE_PATH}/DESCRIPTION
+		mv -f ${RDTMP}/man/*Rd ${RDTMP}/man/.*Rd ${PACKAGE_PATH}/man
+		[ -f ${RDTMP}/DESCRIPTION ] && mv -f ${RDTMP}/DESCRIPTION ${PACKAGE_PATH}
+		[ -f ${RDTMP}/NAMESPACE ]   && mv -f ${RDTMP}/NAMESPACE   ${PACKAGE_PATH}
 		exit 199
 	else
 		if [ $numRd -eq 0 ]; then
 			cat "roxygen created no Rd files. restoring previous DESCRIPTION, NAMESPACE, Rd files"
-			rm -rf ${PACKAGE_PATH}/man
-			mv -f ${RDTMP}/man         ${PACKAGE_PATH}/man
-			cp -f ${RDTMP}/DESCRIPTION ${PACKAGE_PATH}
-			cp -f ${RDTMP}/NAMESPACE   ${PACKAGE_PATH}
+			rm -rf ${PACKAGE_PATH}/man/*Rd ${PACKAGE_PATH}/man/.*Rd ${PACKAGE_PATH}/NAMESPACE ${PACKAGE_PATH}/DESCRIPTION
+			mv -f ${RDTMP}/man/*Rd ${RDTMP}/man/.*Rd ${PACKAGE_PATH}/man
+			[ -f ${RDTMP}/DESCRIPTION ] && mv -f ${RDTMP}/DESCRIPTION ${PACKAGE_PATH}
+			[ -f ${RDTMP}/NAMESPACE ]   && mv -f ${RDTMP}/NAMESPACE   ${PACKAGE_PATH}
 		else
 			rm -rf ${RDTMP}/man ${RDTMP}/NAMESPACE ${RDTMP}/DESCRIPTION
-			# Delete empty inst/doc folder
-			docDir=${PACKAGE_PATH}/inst/doc
-			numDocFiles=`ls $docDir | wc -l`
-			if [ $numDocFiles -eq 0 ]; then
-				rm -rf $docDir
-			fi
+			# restore any SCM folders that may be underneath the man folder.
+			[ -d ${RDTMP}/man/.svn ] && mv -f ${RDTMP}/man/.svn ${PACKAGE_PATH}/man
+			[ -d ${RDTMP}/man/.git ] && mv -f ${RDTMP}/man/.git ${PACKAGE_PATH}/man
+			
+			# Delete empty inst/doc folder (rmdir won't delete a dir if it's not empty)
+			rmdir ${PACKAGE_PATH}/inst/doc 2> /dev/null
+			
 			# % characters in Rd files need to be escaped (\%).
 			# unescaped %'s can sneak in, eg if a default param has a % in it, which ends up in the \usage section of Rd
 			perl -pi -e 's/%/\\%/' ${PACKAGE_PATH}/man/.[a-zA-Z0-9]*Rd ${PACKAGE_PATH}/man/*Rd
