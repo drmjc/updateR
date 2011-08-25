@@ -160,41 +160,42 @@ if [ $ROXYGENIZE -eq 0 ]; then
 	fi
 	
 	# backup those files that roxygen will edit
-	# rm $PACKAGE_PATH/man/*Rd
-	[ -d $PACKAGE_PATH/man ] && mv -f $PACKAGE_PATH/man/*Rd ${RDTMP} # may not exist
-	cp -f $PACKAGE_PATH/DESCRIPTION ${RDTMP} # must exist
-	if [ -f $PACKAGE_PATH/NAMESPACE ]; then cp -f $PACKAGE_PATH/NAMESPACE ${RDTMP}; fi # may not exist
+	# rm ${PACKAGE_PATH}/man/*Rd
+	cp -f ${PACKAGE_PATH}/DESCRIPTION ${RDTMP} # must exist
+	[ -d ${PACKAGE_PATH}/man ] && mkdir ${RDTMP}/tmp && mv -f ${PACKAGE_PATH}/man ${RDTMP}/tmp # may not exist
+	[ -f ${PACKAGE_PATH}/NAMESPACE ] && cp -f ${PACKAGE_PATH}/NAMESPACE ${RDTMP} # may not exist
 	
 	# roxygenize
-	R CMD roxygen -d $PACKAGE_PATH > $OUT 2>&1
+	R CMD roxygen -d ${PACKAGE_PATH} > $OUT 2>&1
 	roxOK=$?
 	numRd=`ls ${PACKAGE_PATH}/man | wc -l`
 	if [ $roxOK -ne 0 ]; then
 		cat >&2 $OUT
 		rm $OUT
 		echo >&2 "roxygenize failed. restoring previous DESCRIPTION, NAMESPACE, Rd files"
-		rm -f $PACKAGE_PATH/man/*Rd
-		mv -f $RDTMP/*Rd $PACKAGE_PATH/man/
-		cp -f $RDTMP/DESCRIPTION $PACKAGE_PATH
-		cp -f $RDTMP/NAMESPACE $PACKAGE_PATH
+		rm -rf ${PACKAGE_PATH}/man
+		mv -f ${RDTMP}/man         ${PACKAGE_PATH}/man
+		cp -f ${RDTMP}/DESCRIPTION ${PACKAGE_PATH}
+		cp -f ${RDTMP}/NAMESPACE   ${PACKAGE_PATH}
 		exit 199
 	else
 		if [ $numRd -eq 0 ]; then
 			cat "roxygen created no Rd files. restoring previous DESCRIPTION, NAMESPACE, Rd files"
-			mv -f $RDTMP/*Rd $PACKAGE_PATH/man/
-			cp $RDTMP/DESCRIPTION $PACKAGE_PATH
-			cp $RDTMP/NAMESPACE $PACKAGE_PATH
+			rm -rf ${PACKAGE_PATH}/man
+			mv -f ${RDTMP}/man         ${PACKAGE_PATH}/man
+			cp -f ${RDTMP}/DESCRIPTION ${PACKAGE_PATH}
+			cp -f ${RDTMP}/NAMESPACE   ${PACKAGE_PATH}
 		else
-			rm -f $RDTMP/*Rd $RDTMP/NAMESPACE $RDTMP/DESCRIPTION
+			rm -rf ${RDTMP}/man ${RDTMP}/NAMESPACE ${RDTMP}/DESCRIPTION
 			# Delete empty inst/doc folder
-			docDir=$PACKAGE_PATH/inst/doc
+			docDir=${PACKAGE_PATH}/inst/doc
 			numDocFiles=`ls $docDir | wc -l`
 			if [ $numDocFiles -eq 0 ]; then
 				rm -rf $docDir
 			fi
 			# % characters in Rd files need to be escaped (\%).
 			# unescaped %'s can sneak in, eg if a default param has a % in it, which ends up in the \usage section of Rd
-			perl -pi -e 's/%/\\%/' ${PACKAGE_PATH}/man/*Rd
+			perl -pi -e 's/%/\\%/' ${PACKAGE_PATH}/man/.[a-zA-Z0-9]*Rd ${PACKAGE_PATH}/man/*Rd
 			perl -pi -e 's/export\((.*<-)\)/export("$1")/' ${PACKAGE_PATH}/NAMESPACE
 		fi
 	fi
@@ -221,7 +222,7 @@ fi
 # Parse the package DESCRIPTION file to determine the package version.
 #
 PKGVERSION=`grep Version "${PACKAGE_DIR}/${PACKAGE}/DESCRIPTION" | sed 's/Version: //'`
-FILE_TO_INSTALL=""
+FILE_TO_INSTALL="${PACKAGE}_${PKGVERSION}.tar.gz"
 
 # build the source package
 if [ $SOURCE -eq 0 ]; then
