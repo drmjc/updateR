@@ -16,5 +16,6 @@ columns can be specified using the \sQuote{fields} argument.}
 \arguments{\item{prefix}{the URL prefix, eg: \url{http://mirror.aarnet.edu.au/pub/CRAN}}
 }
 \examples{options(repos="http://mirror.aarnet.edu.au/pub/CRAN")
-available.packages.cran()}
+p <- available.packages.cran()
+str(p)}
 
