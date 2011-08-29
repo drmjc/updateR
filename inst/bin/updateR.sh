@@ -144,6 +144,24 @@ PACKAGE_DIR=$(dirname ${PACKAGE_PATH})
 OUT=`mktemp -t updateR.XXXXX`
 
 
+# backup/reinstate those files that roxygen will perturb
+# during an R CMD ROXYGENIZE
+function backupRoxygen {
+	# $1 = from, $2 = to
+	cp -f $1/DESCRIPTION $2/DESCRIPTION
+	[ -f $1/NAMESPACE ] && cp -f $1/NAMESPACE $2/NAMESPACE
+	[ -d $1/man ] && [ "$(ls -A $1/man/*Rd)" ] && mkdir $2/man && mv -f $1/man/*Rd $2/man
+}
+
+# If you document a hidden function, you can end up with a hidden Rd file, which
+# a) is missed by R CMD CHECK
+# b) complicates all the copy commands below.
+# You can avoid this via:
+# - specify the Rd filename via @rdname, or 
+# - disable Rd creation via @nord
+function hiddenRdWarning {
+	[ "$(find $1/man -type f -maxdepth 1 -name "\.*.Rd")" ] && echo "WARNING: hidden Rd file(s) detected. You should use @nord, or @rdname tags & delete the offending files"
+}
 
 #
 # Roygenize the package.
@@ -159,11 +177,10 @@ if [ $ROXYGENIZE -eq 0 ]; then
 		exit 198
 	fi
 	
+	hiddenRdWarning ${PACKAGE_PATH}
+	
 	# backup those files that roxygen will edit
-	# rm ${PACKAGE_PATH}/man/*Rd
-	cp -f ${PACKAGE_PATH}/DESCRIPTION ${RDTMP}
-	[ -f ${PACKAGE_PATH}/NAMESPACE ] && cp -f ${PACKAGE_PATH}/NAMESPACE ${RDTMP}
-	[ -d ${PACKAGE_PATH}/man ] && mkdir ${RDTMP}/man && cp -a ${PACKAGE_PATH}/man/*Rd ${PACKAGE_PATH}/man/.*Rd ${RDTMP}/man
+	backupRoxygen ${PACKAGE_PATH} ${RDTMP}
 	
 	# roxygenize
 	R CMD roxygen -d ${PACKAGE_PATH} > $OUT 2>&1
@@ -173,33 +190,28 @@ if [ $ROXYGENIZE -eq 0 ]; then
 		cat >&2 $OUT
 		rm $OUT
 		echo >&2 "roxygenize failed. restoring previous DESCRIPTION, NAMESPACE, Rd files"
-		rm -rf ${PACKAGE_PATH}/man/*Rd ${PACKAGE_PATH}/man/.*Rd ${PACKAGE_PATH}/NAMESPACE ${PACKAGE_PATH}/DESCRIPTION
-		mv -f ${RDTMP}/man/*Rd ${RDTMP}/man/.*Rd ${PACKAGE_PATH}/man
-		[ -f ${RDTMP}/DESCRIPTION ] && mv -f ${RDTMP}/DESCRIPTION ${PACKAGE_PATH}
-		[ -f ${RDTMP}/NAMESPACE ]   && mv -f ${RDTMP}/NAMESPACE   ${PACKAGE_PATH}
+		rm -rf ${PACKAGE_PATH}/man/*Rd ${PACKAGE_PATH}/NAMESPACE ${PACKAGE_PATH}/DESCRIPTION
+		backupRoxygen ${RDTMP} ${PACKAGE_PATH}
 		exit 199
 	else
 		if [ $numRd -eq 0 ]; then
 			cat "roxygen created no Rd files. restoring previous DESCRIPTION, NAMESPACE, Rd files"
-			rm -rf ${PACKAGE_PATH}/man/*Rd ${PACKAGE_PATH}/man/.*Rd ${PACKAGE_PATH}/NAMESPACE ${PACKAGE_PATH}/DESCRIPTION
-			mv -f ${RDTMP}/man/*Rd ${RDTMP}/man/.*Rd ${PACKAGE_PATH}/man
-			[ -f ${RDTMP}/DESCRIPTION ] && mv -f ${RDTMP}/DESCRIPTION ${PACKAGE_PATH}
-			[ -f ${RDTMP}/NAMESPACE ]   && mv -f ${RDTMP}/NAMESPACE   ${PACKAGE_PATH}
+			rm -rf ${PACKAGE_PATH}/man/*Rd ${PACKAGE_PATH}/NAMESPACE ${PACKAGE_PATH}/DESCRIPTION
+			backupRoxygen ${RDTMP} ${PACKAGE_PATH}
 		else
 			rm -rf ${RDTMP}/man ${RDTMP}/NAMESPACE ${RDTMP}/DESCRIPTION
-			# restore any SCM folders that may be underneath the man folder.
-			[ -d ${RDTMP}/man/.svn ] && mv -f ${RDTMP}/man/.svn ${PACKAGE_PATH}/man
-			[ -d ${RDTMP}/man/.git ] && mv -f ${RDTMP}/man/.git ${PACKAGE_PATH}/man
 			
 			# Delete empty inst/doc folder (rmdir won't delete a dir if it's not empty)
 			rmdir ${PACKAGE_PATH}/inst/doc 2> /dev/null
 			
 			# % characters in Rd files need to be escaped (\%).
 			# unescaped %'s can sneak in, eg if a default param has a % in it, which ends up in the \usage section of Rd
-			perl -pi -e 's/%/\\%/' ${PACKAGE_PATH}/man/.[a-zA-Z0-9]*Rd ${PACKAGE_PATH}/man/*Rd
+			perl -pi -e 's/%/\\%/' ${PACKAGE_PATH}/man/*Rd
 			perl -pi -e 's/export\((.*<-)\)/export("$1")/' ${PACKAGE_PATH}/NAMESPACE
 		fi
 	fi
+	
+	hiddenRdWarning ${PACKAGE_PATH}
 fi
 
 #
