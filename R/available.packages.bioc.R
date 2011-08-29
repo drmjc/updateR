@@ -15,7 +15,8 @@
 #' @author Mark Cowley
 #' @examples
 #' options(repos="http://mirror.aarnet.edu.au/pub/CRAN")
-#' available.packages.cran()
+#' p <- available.packages.cran()
+#' str(p)
 available.packages.cran <- function(prefix=getOption("repos")) {
 	available.packages(contrib.url(prefix, "source"))
 }
