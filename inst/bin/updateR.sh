@@ -22,6 +22,7 @@
 # 2010-01-12: support for building binary packages; switched to using getopts and -l and -m flags.
 # 2011-04-11: added flags to control --no-vignettes --no-manual --no-docs
 # 2011-06-03: added roxygen support
+# 2011-09-21: added --vanilla flag, to skip reading .Rprofile.
 usage() {
 	cat << EOF
 usage:
@@ -171,7 +172,7 @@ if [ $ROXYGENIZE -eq 0 ]; then
 	echo "Roxygenizing ${PACKAGE}..."
 
 	# is roxygen installed?
-	R CMD roxygen &> /dev/null
+	R --vanilla CMD roxygen &> /dev/null
 	if [ $? -ne 1 ]; then
 		echo "roxygen is not installed."
 		exit 198
@@ -183,7 +184,7 @@ if [ $ROXYGENIZE -eq 0 ]; then
 	backupRoxygen ${PACKAGE_PATH} ${RDTMP}
 	
 	# roxygenize
-	R CMD roxygen -d ${PACKAGE_PATH} > $OUT 2>&1
+	R --vanilla CMD roxygen -d ${PACKAGE_PATH} > $OUT 2>&1
 	roxOK=$?
 	numRd=`ls ${PACKAGE_PATH}/man | wc -l`
 	if [ $roxOK -ne 0 ]; then
@@ -220,7 +221,7 @@ fi
 if [ $CHECK -eq 0 ]; then
 	echo "Checking ${PACKAGE}..."
 
-	R CMD check ${OPTIONS} ${PACKAGE_PATH} > $OUT 2>&1
+	R --vanilla CMD check ${OPTIONS} ${PACKAGE_PATH} > $OUT 2>&1
 	if [ $? -ne 0 ]; then
 		echo >&2 "R CMD CHECK failed."
 		cat >&2 $OUT
@@ -241,7 +242,7 @@ FILE_TO_INSTALL="${PACKAGE}_${PKGVERSION}.tar.gz"
 if [ $SOURCE -eq 0 ]; then
 	echo "Building *source* ${PACKAGE}..."
 	cd "$PACKAGE_DIR"
-	R CMD build $OPTIONS $PACKAGE > $OUT 2>&1
+	R --vanilla CMD build $OPTIONS $PACKAGE > $OUT 2>&1
 	if [ $? -ne 0 ]; then
 		cat >&2 $OUT
 		echo >&2 "Building *source* failed; no installation performed"
@@ -255,7 +256,7 @@ fi
 if [ $BINARY -eq 0 ]; then
 	echo "Building *binary* ${PACKAGE}..."
 	cd "$PACKAGE_DIR"
-	R CMD build $OPTIONS --binary $PACKAGE > $OUT 2>&1
+	R --vanilla CMD build $OPTIONS --binary $PACKAGE > $OUT 2>&1
 	if [ $? -ne 0 ]; then
 		cat $OUT
 		echo "Building *binary* failed; no installation performed"
@@ -284,7 +285,7 @@ fi
 # if [ $WINBINARY ]; then
 #	echo "Building windows binary ${PACKAGE}..."
 #	cd "$PACKAGE_DIR"
-#	R CMD build --binary $PACKAGE > /dev/stdout
+#	R --vanilla CMD build --binary $PACKAGE > /dev/stdout
 # fi
 
 # install the package?
@@ -292,9 +293,9 @@ if [ $INSTALL -eq 0 ]; then
 	echo "Installing ${FILE_TO_INSTALL}..."
 	# install the package: if $R_LIB is undefined, install there, else install to the default
 	if [ -n "$R_LIB" ]; then
-		R CMD INSTALL -l $R_LIB $FILE_TO_INSTALL > $OUT 2>&1
+		R --vanilla CMD INSTALL -l $R_LIB $FILE_TO_INSTALL > $OUT 2>&1
 	else
-		R CMD INSTALL $FILE_TO_INSTALL > $OUT 2>&1
+		R --vanilla CMD INSTALL $FILE_TO_INSTALL > $OUT 2>&1
 	fi
 	if [ $? -ne 0 ]; then
 		cat $OUT
