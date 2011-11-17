@@ -177,7 +177,7 @@ get.function.dependencies2file <- function(	fun,
 #'	\item{my.function.packages}{a vector indicating which package each function came from}
 #'	\item{other.packages}{a vector of other CRAN or BioConductor packages which are also needed}
 #' @author Mark Cowley
-#' @nord
+#' @noRd
 .get.function.dependencies <- function(fun, packages, ignore.packages=c("base", getOption("defaultPackages")), src.root=getOption("src.root"), verbose=FALSE) {
 	require(codetools)
 	if ( !is.character(fun) ) fun <- as.character(substitute(fun))
