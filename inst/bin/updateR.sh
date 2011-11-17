@@ -10,7 +10,6 @@
 #
 # todo: implement a versioning updater system
 # todo: update the datestamp in the DESCRIPTION file
-# todo: warn about running roxygen if it's not listed as a dependency in the DESCRIPTION
 #
 # Mark Cowley
 #
@@ -23,6 +22,7 @@
 # 2011-04-11: added flags to control --no-vignettes --no-manual --no-docs
 # 2011-06-03: added roxygen support
 # 2011-09-21: added --vanilla flag, to skip reading .Rprofile.
+# 2011-11-17: updated to roxygen2 (v2.1) support
 usage() {
 	cat << EOF
 usage:
@@ -159,9 +159,13 @@ function backupRoxygen {
 # b) complicates all the copy commands below.
 # You can avoid this via:
 # - specify the Rd filename via @rdname, or 
-# - disable Rd creation via @nord
+# - disable Rd creation via @noRd
 function hiddenRdWarning {
-	[ "$(find $1/man -type f -maxdepth 1 -name "\.*.Rd")" ] && echo "WARNING: hidden Rd file(s) detected. You should use @nord, or @rdname tags & delete the offending files"
+	[ "$(find $1/man -type f -maxdepth 1 -name "\.*.Rd")" ] && echo "WARNING: hidden Rd file(s) detected. You should use @noRd, or @rdname tags & delete the offending files"
+}
+
+function roxygenize {
+	Rscript --vanilla -e "if(require(methods) && require(roxygen2)) roxygenize(\"$1\")"
 }
 
 #
@@ -171,12 +175,13 @@ RDTMP=`mktemp -d -t updateR.XXXXX`
 if [ $ROXYGENIZE -eq 0 ]; then
 	echo "Roxygenizing ${PACKAGE}..."
 
-	# is roxygen installed?
-	R --vanilla CMD roxygen &> /dev/null
-	if [ $? -ne 1 ]; then
-		echo "roxygen is not installed."
-		exit 198
-	fi
+	# R --vanilla CMD roxygen2 is not supported <yet>
+	# # is roxygen installed?
+	# R --vanilla CMD roxygen2 &> /dev/null
+	# if [ $? -ne 1 ]; then
+	# 	echo "roxygen is not installed."
+	# 	exit 198
+	# fi
 	
 	hiddenRdWarning ${PACKAGE_PATH}
 	
@@ -184,7 +189,7 @@ if [ $ROXYGENIZE -eq 0 ]; then
 	backupRoxygen ${PACKAGE_PATH} ${RDTMP}
 	
 	# roxygenize
-	R --vanilla CMD roxygen -d ${PACKAGE_PATH} > $OUT 2>&1
+	roxygenize "${PACKAGE_PATH}"  > $OUT 2>&1
 	roxOK=$?
 	numRd=`ls ${PACKAGE_PATH}/man | wc -l`
 	if [ $roxOK -ne 0 ]; then
