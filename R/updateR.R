@@ -47,7 +47,7 @@
 #' @param no.manual logical: if \dQuote{TRUE}, turn off the creation of PDF manuals
 #' @param no.docs if TRUE, logical: if \dQuote{TRUE}, turn off the creation of documentation
 #' @export
-#' @seealso \code{\link{relibrary}}, \code{\link[roxygen]{roxygenize}}, \code{\link{.Rprofile}}, \code{\link{install.packages}}
+#' @seealso \code{\link{relibrary}}, \code{\link[roxygen2]{roxygenize}}, \code{\link{.Rprofile}}, \code{\link{install.packages}}
 #' @author Mark Cowley
 #' @examples 
 #' \dontrun{
