@@ -3,7 +3,7 @@
 \title{Import the function header from within a source file.}
 \usage{
   import.function.header.from.src.file(func, f,
-  strip.comment.char = FALSE)
+    strip.comment.char = FALSE)
 }
 \arguments{
   \item{func}{a function name, or the function's code}

@@ -6,8 +6,9 @@ Reloads a package. This function works exactly the same as
 it already loaded. This is useful for developers. For more information see
 \code{\link[base]{library}}.}
 \usage{
-  relibrary(package, character.only = FALSE, warn.conflicts
-  = TRUE, unload = TRUE, force = FALSE, ...)
+  relibrary(package, character.only = FALSE,
+    warn.conflicts = TRUE, unload = TRUE, force = FALSE,
+    ...)
 }
 \arguments{
   \item{package}{Name or character string giving the name

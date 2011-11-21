@@ -2,9 +2,9 @@
 \alias{get.function.dependencies2file}
 \title{Determine all the dependencies of a function from a list of packages and src files and export them into a file}
 \usage{
-  get.function.dependencies2file(fun, file, packages =
-  c(list.my.packages(src.root = getOption("src.root")),
-  ".GlobalEnv"), src.files = NULL, verbose = FALSE)
+  get.function.dependencies2file(fun, file,
+    packages = c(list.my.packages(src.root = getOption("src.root")), ".GlobalEnv"),
+    src.files = NULL, verbose = FALSE)
 }
 \arguments{
   \item{fun}{either a function name, of the function's

@@ -2,8 +2,7 @@
 \alias{available.packages.bioc}
 \title{Download a current list of available Bioconductor packages}
 \usage{
-  available.packages.bioc(prefix =
-  getOption("BioC_mirror"))
+  available.packages.bioc(prefix = getOption("BioC_mirror"))
 }
 \arguments{
   \item{prefix}{the URL prefix, eg:

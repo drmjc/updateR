@@ -41,7 +41,7 @@
 }
 \examples{
 \dontrun{
-mjc2roxygen("~/src/R/mjcdev")
+ mjc2roxygen("~/src/R/mjcdev")
 }
 }
 

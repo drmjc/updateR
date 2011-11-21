@@ -2,8 +2,8 @@
 \alias{which.package}
 \title{Function to tell you which package a function came from.}
 \usage{
-  which.package(func, unique = FALSE, src.root =
-  getOption("src.root"), verbose = FALSE)
+  which.package(func, unique = FALSE,
+    src.root = getOption("src.root"), verbose = FALSE)
 }
 \arguments{
   \item{func}{either the quoted function name (eg

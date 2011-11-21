@@ -2,9 +2,9 @@
 \alias{get.function.dependencies}
 \title{Determine all the dependencies of a function from a list of packages.}
 \usage{
-  get.function.dependencies(fun, packages =
-  c(list.my.packages(src.root = getOption("src.root")),
-  ".GlobalEnv"), verbose = FALSE)
+  get.function.dependencies(fun,
+    packages = c(list.my.packages(src.root = getOption("src.root")), ".GlobalEnv"),
+    verbose = FALSE)
 }
 \arguments{
   \item{fun}{either a function name, of the function's

@@ -9,10 +9,11 @@ This function assumes that you develop your R packages within a top level direct
 given by the \dQuote{src.root} option.}
 \usage{
   updateR(package, src.root = getOption("src.root"),
-  lib.loc = NULL, warn.conflicts = TRUE, roxygen = FALSE,
-  check = FALSE, source = TRUE, binary = FALSE, winbinary =
-  FALSE, install = TRUE, no.vignettes = FALSE, no.manual =
-  FALSE, no.docs = FALSE)
+    lib.loc = NULL, warn.conflicts = TRUE, roxygen = FALSE,
+    check = FALSE, source = TRUE, binary = FALSE,
+    winbinary = FALSE, install = TRUE,
+    no.vignettes = FALSE, no.manual = FALSE,
+    no.docs = FALSE)
 }
 \arguments{
   \item{package}{the name of the package to be updated.
@@ -99,7 +100,7 @@ updateR("updateR", "~/src/R", roxygen=TRUE, check=TRUE, source=TRUE, install=TRU
 }
 \seealso{
   \code{\link{relibrary}},
-  \code{\link[roxygen]{roxygenize}},
+  \code{\link[roxygen2]{roxygenize}},
   \code{\link{.Rprofile}}, \code{\link{install.packages}}
 }
 

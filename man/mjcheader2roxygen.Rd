@@ -3,7 +3,7 @@
 \title{Parse a function header comment into roxygen list}
 \usage{
   mjcheader2roxygen(hdr, docType = "", format = "",
-  keywords = "", default.author = "Mark Cowley")
+    keywords = "", default.author = "Mark Cowley")
 }
 \arguments{
   \item{hdr}{a character vector containing the parsed

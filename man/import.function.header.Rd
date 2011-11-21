@@ -2,10 +2,10 @@
 \alias{import.function.header}
 \title{Search for & import the function header from within a source file.}
 \usage{
-  import.function.header(func, src.root =
-  getOption("src.root"), src.files = NULL,
-  strip.comment.char = FALSE, exclude.patterns = c("~",
-  ".Rcheck", ".git", ".svn"))
+  import.function.header(func,
+    src.root = getOption("src.root"), src.files = NULL,
+    strip.comment.char = FALSE,
+    exclude.patterns = c("~", ".Rcheck", ".git", ".svn"))
 }
 \arguments{
   \item{func}{a function name, or the function's code}

@@ -3,8 +3,8 @@
 \title{Unload a library.
 Unload a library which has already been \code{load}ed. Adapted from \code{\link{relibrary}}}
 \usage{
-  unlibrary(package, character.only = FALSE, warn.conflicts
-  = TRUE, ...)
+  unlibrary(package, character.only = FALSE,
+    warn.conflicts = TRUE, ...)
 }
 \arguments{
   \item{package}{Name or character string giving the name

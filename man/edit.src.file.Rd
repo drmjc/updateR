@@ -3,8 +3,8 @@
 \title{Search for the .R file that contains a function, and open it in an editor.}
 \usage{
   edit.src.file(func, src.root = getOption("src.root"),
-  src.files = NULL, editor = NULL, exclude.patterns =
-  c("~", ".Rcheck", ".git", ".svn"))
+    src.files = NULL, editor = NULL,
+    exclude.patterns = c("~", ".Rcheck", ".git", ".svn"))
 }
 \arguments{
   \item{func}{a function name, or the function's code}

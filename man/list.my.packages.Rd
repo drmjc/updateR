@@ -3,7 +3,7 @@
 \title{List my R packages which all sit inside src.root}
 \usage{
   list.my.packages(src.root = getOption("src.root"),
-  maxdepth = 1, only.installed = TRUE)
+    maxdepth = 1, only.installed = TRUE)
 }
 \arguments{
   \item{src.root}{The root folder containing all R package

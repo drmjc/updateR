@@ -2,8 +2,8 @@
 \alias{import.function.from.src.file}
 \title{Import the function definition from within a source file.}
 \usage{
-  import.function.from.src.file(func, f, import.header =
-  TRUE)
+  import.function.from.src.file(func, f,
+    import.header = TRUE)
 }
 \arguments{
   \item{func}{a function name, or the function's body. eg

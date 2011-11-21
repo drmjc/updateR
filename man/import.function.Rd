@@ -3,8 +3,8 @@
 \title{Search for & import the function definition from within a source file.}
 \usage{
   import.function(func, src.root = getOption("src.root"),
-  src.files = NULL, import.header = TRUE, exclude.patterns
-  = c("~", ".Rcheck", ".git", ".svn"))
+    src.files = NULL, import.header = TRUE,
+    exclude.patterns = c("~", ".Rcheck", ".git", ".svn"))
 }
 \arguments{
   \item{func}{a function name, or the function's code}

@@ -4,8 +4,9 @@
 This is a wrapper around \code{\link{find.src.file}}}
 \usage{
   which.src.file(func, src.root = getOption("src.root"),
-  src.files = NULL, exclude.patterns = c("~", ".Rcheck",
-  ".git", ".svn"), unique = TRUE)
+    src.files = NULL,
+    exclude.patterns = c("~", ".Rcheck", ".git", ".svn"),
+    unique = TRUE)
 }
 \arguments{
   \item{func}{a function name, or function's code}
