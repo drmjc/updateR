@@ -29,7 +29,7 @@
 }
 \details{
   This is my version of
-  \code{\link[Rd2roxygen]{Rd2roxygen}}, and 90\% of it is
+  \code{\link[Rd2roxygen]{Rd2roxygen}}, and 90\\% of it is
   from Rd2roxygen. It parses all functions, within all
   source files in a package, and inserts roxygenized
   versions of those same comments.
