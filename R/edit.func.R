@@ -45,7 +45,7 @@ edit.src.file <- function(func, src.root=getOption("src.root"), src.files=NULL, 
 
 		p <- which.package(func, verbose=FALSE)
 		# cat(paste("goto line: ",lineno,", then call:\tupdate.", p,"()\n", sep=""))
-		cat(sprintf("goto line: %d, then call:  updateR(%s)\n", lineno, p))
+		cat(sprintf("goto line: %d, then call:  updateR(\"%s\")\n", lineno, p))
 	}
 }
 # CHANGELOG
@@ -53,6 +53,8 @@ edit.src.file <- function(func, src.root=getOption("src.root"), src.files=NULL, 
 # - major roxygen merge of all functions in this file.
 # - bug fix each wrapper function to substitute the value of func before
 #   calling edit.src.file
+# 2012-01-10
+# - wrapped package name in quotes in the final cat(sprintf( command
 # 
 
 
