@@ -1,4 +1,5 @@
 #' Package development toolkit.
+#' 
 #' A collection of functions that enable R package maintainers to build and update packages. 
 #' 
 #' \code{\link{updateR}} runs \code{roxygen2}, \code{R CMD CHECK}, \code{R CMD BUILD} and 

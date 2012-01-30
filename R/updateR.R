@@ -1,4 +1,5 @@
 #' A flexible R package updater.
+#' 
 #' This function can be used to roxygenize, check, build source/binary/windows binary, install
 #' and reload R packages. 
 #' Under-the-hood, it calls a shell script, which in turn calls various \dQuote{R CMD}

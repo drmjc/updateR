@@ -1,12 +1,6 @@
 \name{updateR}
 \alias{updateR}
-\title{A flexible R package updater.
-This function can be used to roxygenize, check, build source/binary/windows binary, install
-and reload R packages.
-Under-the-hood, it calls a shell script, which in turn calls various \dQuote{R CMD}
-programs, like R CMD CHECK, R CMD roxygenize, R CMD BUILD, R CMD INSTALL.
-This function assumes that you develop your R packages within a top level directory, eg ~/src/R
-given by the \dQuote{src.root} option.}
+\title{A flexible R package updater.}
 \usage{
   updateR(package, src.root = getOption("src.root"),
     lib.loc = NULL, warn.conflicts = TRUE, roxygen = FALSE,
@@ -54,6 +48,16 @@ given by the \dQuote{src.root} option.}
   off the creation of documentation}
 }
 \description{
+  This function can be used to roxygenize, check, build
+  source/binary/windows binary, install and reload R
+  packages. Under-the-hood, it calls a shell script, which
+  in turn calls various \dQuote{R CMD} programs, like R CMD
+  CHECK, R CMD roxygenize, R CMD BUILD, R CMD INSTALL. This
+  function assumes that you develop your R packages within
+  a top level directory, eg ~/src/R given by the
+  \dQuote{src.root} option.
+}
+\details{
   I tend to edit my source code in an external editor
   (TextMate), then will want to incorporate those code
   changes into my current R session. A simple
@@ -61,8 +65,7 @@ given by the \dQuote{src.root} option.}
   the package to be built and then installed. Optional
   roxygenizing, and package checking can occur, prior to
   package building.
-}
-\details{
+
   Roxygen is an inline documentation engine which builds
   \code{Rd} files from structured comment headers above
   each function. Roxygen creates \code{Rd} files, and

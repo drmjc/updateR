@@ -1,16 +1,18 @@
 \docType{package}
 \name{updateR-package}
 \alias{updateR-package}
-\title{Package development toolkit.
-A collection of functions that enable R package maintainers to build and update packages.}
+\title{Package development toolkit.}
 \description{
+  A collection of functions that enable R package
+  maintainers to build and update packages.
+}
+\details{
   \code{\link{updateR}} runs \code{roxygen2}, \code{R CMD
   CHECK}, \code{R CMD BUILD} and \code{R CMD INSTALL} to
   generate polished R packages. Execution stops upon
   errors, and all messages are hidden unless there are
   errors.
-}
-\details{
+
   Tools for refreshing a currently loaded library are
   included (\code{\link{relibrary}}).
 
