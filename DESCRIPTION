@@ -10,12 +10,13 @@ Description: A collection of functions that enable R
     BUILD & INSTALL. Tools for refreshing a currently
     loaded library are included, as well as finding the
     dependencies of any function.
-Version: 1.0.4
+Version: 1.0.5
 URL: http://pwbc.garvan.unsw.edu.au
-Date: 2011-09-21
+Date: 2012-01-30
 Depends:
     R (>= 2.12.0),
-    codetools
+    codetools,
+    tools
 Suggests:
     Rd2roxygen
 Collate:
