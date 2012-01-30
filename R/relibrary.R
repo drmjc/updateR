@@ -1,27 +1,37 @@
 #' Reloads a package
+#' 
 #' Reloads a package. This function works exactly the same as
 #' \code{\link[base]{library}}, \emph{except} that it is reloads the package if
 #' it already loaded. This is useful for developers. For more information see
-#' \code{\link[base]{library}}.
+#' \code{\link[base]{library}}. Hadley Wickham has since written the \code{devtools}
+#' package which has a very similar \code{reload} function.
 #' 
-#' While relibrary is reloading a package the option \code{relibrary} will be
-#' set to name of the package currently reloaded. This can be useful if the
+#' While \code{relibrary} is in the process of reloading a package the 
+#' \code{options(relibrary)} will be
+#' set to name of the package currently being reloaded. This can be useful if the
 #' package to be reloaded would like save away data until it is loaded again.
 #' 
 #' As of R 2.12, (and perhaps before) reloading of documentation files doesn't
 #' appear to be working. If you change doc files, then for the time being, the
-#' whole R session needs restarting. Relibrary does still work OK for updating
-#' source code changes.
-#'
-#' @note
-#' Currently, if the roxygen comments, or Rd files change, then relibrary is 
-#' unable to update the man files if the package has already been loaded.
-#' The following error is produced when a man page is requested:
-#' \code{Error in tools:::fetchRdDB(RdDB, basename(file)) : 
-#'  internal error -3 in R_decompress1}
+#' whole R session needs restarting.Relibrary does still work OK for updating
+#' source code changes. 
+#' 
+#' @note Reloading packages after making changes to documentation\cr
+#' If you edit an Rd file, rebuild, reinstall & reload the package in an active R session, you
+#' will get this error:\cr
+#' \dQuote{\code{Error in fetch(key) : internal error -3 in R_decompress1}}
+#' I've confirmed with Rdevel (2012-01-27) that it is impossible to work around
+#' this error... you have to restart your R session.\cr
+#' Prof Ripley: \dQuote{This is simply not supported.  Lazy-load databases are cached, and you
+#' cannot expect to change them during the R session once they have been used.}
+#' More info, including 3 suggestions here:
+#' \url{http://r.789695.n4.nabble.com/Unable-to-reload-Rdoc-td4333063.html}
+#' Hadley's \code{devtools::check_Rd} function will render an Rd file without
+#' having to relaod it.
 #'
 #' @references
 #' \url{https://stat.ethz.ch/pipermail/r-help/2002-January/018006.html}
+#' \url{http://r.789695.n4.nabble.com/Unable-to-reload-Rdoc-td4333063.html}
 #'
 #' @param package Name or character string giving the name of a package.
 #' @param character.only A logical indicating whether \code{package} can be
@@ -39,7 +49,7 @@
 #' @param \dots Any other arguments that \code{\link[base]{library}} accepts.
 #' @author Henrik Bengtsson, \email{henrikb@@braju.com},
 #'   \url{http://www.braju.com/R/}, updated by Mark Cowley.
-#' @seealso See \code{\link[base]{library}}.
+#' @seealso See \code{\link[base]{library}} \code{\link{unlibrary}}
 #' @export
 relibrary <- function(package, character.only=FALSE, warn.conflicts=TRUE, unload=TRUE, force=FALSE, ...) {
 	if (!character.only)
@@ -47,84 +57,74 @@ relibrary <- function(package, character.only=FALSE, warn.conflicts=TRUE, unload
 
 	options.relibrary <- options(relibrary=package)[[1]];
 
-	# with namespaces, you can't detach a package if other packages
-	# depend on it. These dependencies will need detaching, then reattaching.
-	# @TODO - respect the original order of those dependencies in search()
-	# @TODO - make this recursive, since these dependencies may have their own dependencies
-	loaded.dependencies <- function(package) {
-		# which packages depend upon this package that are also loaded
-		lp <- grep("package", search(), value=T)
-		lp <- sub("package:", "", lp)
-		if( ! package %in% lp ) return( character(0) )
-		ip <- as.data.frame(installed.packages(), stringsAsFactors=FALSE)
-		ip <- subset(ip, package %in% lp)
-		depends <- strsplit(ip$Depends, ", ")
-		names(depends) <- ip$Package
-		idx <- which(sapply(depends, function(x) package %in% x))
-		pkg.dependencies <- names(idx)
-		pkg.dependencies
-	}
-	
-	pkg.dependencies <- loaded.dependencies(package)
-	if( length(pkg.dependencies) > 0 ) {
-		cat("Detaching dependencies: ")
-		print(pkg.dependencies)
-		for( i in 1:length(pkg.dependencies) ) {
-			unlibrary(pkg.dependencies[i], character.only=TRUE)
+	# # with namespaces, you can't detach a package if other packages
+	# # depend on it. These dependencies will need detaching, then reattaching.
+	# # @TODO - respect the original order of those dependencies in search()
+	# # @TODO - make this recursive, since these dependencies may have their own dependencies
+	# loaded.dependencies <- function(package) {
+	# 	# which packages depend upon this package that are also loaded
+	# 	lp <- grep("package", search(), value=T)
+	# 	lp <- sub("package:", "", lp)
+	# 	if( ! package %in% lp ) return( character(0) )
+	# 	ip <- as.data.frame(installed.packages(), stringsAsFactors=FALSE)
+	# 	ip <- subset(ip, package %in% lp)
+	# 	depends <- strsplit(ip$Depends, ", ")
+	# 	names(depends) <- ip$Package
+	# 	idx <- which(sapply(depends, function(x) package %in% x))
+	# 	pkg.dependencies <- names(idx)
+	# 	pkg.dependencies
+	# }
+	loaded.dependencies <- function(pkg) {
+		require(tools) || stop("required package 'tools' is not installed")
+
+		ns <- loadedNamespaces()
+		ns.deps <- sapply(ns, function(x) pkgDepends(x)$Depends)
+		idx <- sapply(ns.deps, function(x) pkg %in% x)
+		ns.deps <- subset(ns.deps, idx)
+		if( length(ns.deps) > 0 ) {
+			res <- c(unlist(sapply(names(ns.deps), loaded.dependencies)), names(ns.deps))
 		}
+		else {
+			res <- character(0)
+		}
+		unique(res)
 	}
-	
-	# If package is already attached, then detach it first.
+	# loaded.dependencies("pwbc")
+	# loaded.dependencies("metaGSEA")
+		
+	# If package is already attached, then detach its loaded dependencies, then itself
 	pkgName <- paste(sep="", "package:", package);
 	pos <- match(pkgName, search());
 	if (!is.na(pos)) {
-		# If there exists a function .Last.lib() in the package call it first!
-		if (exists(".Last.lib", where=pos, inherits=FALSE)) {
-			.Last.lib <- get(".Last.lib", pos=pos, inherits=FALSE);
-			if (is.function(.Last.lib)) {
-				libpath <- attr(pos.to.env(pos), "path");
-				if (!is.null(libpath))
-					try(.Last.lib(libpath));
+		pkg.dependencies <- loaded.dependencies(package)
+		if( length(pkg.dependencies) > 0 ) {
+			cat("Detaching dependencies: ")
+			print(pkg.dependencies)
+			for( i in 1:length(pkg.dependencies) ) {
+				unlibrary(pkg.dependencies[i], character.only=TRUE)
 			}
 		}
-		# ...then remove the package.
-		# I need a version which handles packages with namespaces....
-		# # V1.
-		# .Internal(detach(pos));
-		# # V2.
-		# detach(pos=pos, unload=TRUE)
-		# # V3.
-		# tryCatch(
-		# 	detach(pos=pos, unload=TRUE), 
-		# 	.Internal(detach(pos)),
-		# 	silent=TRUE)
-		# # V4. - use .path.package and packageHasNamespace, both from base
-		# if( packageHasNamespace(package, dirname(.path.package(package))) ) {
-		# 	cat(sprintf("%s has a namespace...\n", package))
-		# 	detach(pos=pos, unload=TRUE, force=force)
-		# }
-		# else {
-		# 	cat(sprintf("%s lacks a namespace...\n", package))
-		# 	.Internal(detach(pos), force=force)
-		# }
-		# V5. as V4, but as of R 2.12, .Internal(detach) only accepts 1 arg.
+		
 		hasNamespace <- packageHasNamespace(package, dirname(.path.package(package)))
 		cat(sprintf("%s %s a namespace...\n", package, ifelse(hasNamespace, "has", "lacks")))
-		if(hasNamespace) unloadNamespace(package)
-		detach(pos=pos, unload=unload, force=force)
+		unlibrary(package)
 	}
 
-	library(package=package, character.only=TRUE, warn.conflicts=warn.conflicts, ...);
-	options(relibrary=options.relibrary);
 	if( length(pkg.dependencies) > 0 ) {
 		cat("Reattaching dependencies: ")
 		print(pkg.dependencies)
 		for( i in 1:length(pkg.dependencies) )
 			library(pkg.dependencies[i], character.only=TRUE)
 	}
+	library(package=package, character.only=TRUE, warn.conflicts=warn.conflicts, ...)
+	options(relibrary=options.relibrary)
 }
 ############################################################################
 # HISTORY:
+# 2012-01-24:
+# - wrote recursive version of loaded.dependencies.
+# - unload packages using the updated unlibrary
+# - improved doc & @note regarding the Rd reloading error.
 # 2011-07-04:
 #  MJC - reloading of changed R doc files is failing.
 # 2009-10-12

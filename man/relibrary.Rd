@@ -1,10 +1,6 @@
 \name{relibrary}
 \alias{relibrary}
-\title{Reloads a package
-Reloads a package. This function works exactly the same as
-\code{\link[base]{library}}, \emph{except} that it is reloads the package if
-it already loaded. This is useful for developers. For more information see
-\code{\link[base]{library}}.}
+\title{Reloads a package}
 \usage{
   relibrary(package, character.only = FALSE,
     warn.conflicts = TRUE, unload = TRUE, force = FALSE,
@@ -38,26 +34,43 @@ it already loaded. This is useful for developers. For more information see
   \code{\link[base]{library}} accepts.}
 }
 \description{
-  While relibrary is reloading a package the option
-  \code{relibrary} will be set to name of the package
-  currently reloaded. This can be useful if the package to
-  be reloaded would like save away data until it is loaded
-  again.
+  Reloads a package. This function works exactly the same
+  as \code{\link[base]{library}}, \emph{except} that it is
+  reloads the package if it already loaded. This is useful
+  for developers. For more information see
+  \code{\link[base]{library}}. Hadley Wickham has since
+  written the \code{devtools} package which has a very
+  similar \code{reload} function.
 }
 \details{
+  While \code{relibrary} is in the process of reloading a
+  package the \code{options(relibrary)} will be set to name
+  of the package currently being reloaded. This can be
+  useful if the package to be reloaded would like save away
+  data until it is loaded again.
+
   As of R 2.12, (and perhaps before) reloading of
   documentation files doesn't appear to be working. If you
   change doc files, then for the time being, the whole R
-  session needs restarting. Relibrary does still work OK
-  for updating source code changes.
+  session needs restarting.Relibrary does still work OK for
+  updating source code changes.
 }
 \note{
-  Currently, if the roxygen comments, or Rd files change,
-  then relibrary is unable to update the man files if the
-  package has already been loaded. The following error is
-  produced when a man page is requested: \code{Error in
-  tools:::fetchRdDB(RdDB, basename(file)) : internal error
-  -3 in R_decompress1}
+  Reloading packages after making changes to
+  documentation\cr If you edit an Rd file, rebuild,
+  reinstall & reload the package in an active R session,
+  you will get this error:\cr \dQuote{\code{Error in
+  fetch(key) : internal error -3 in R_decompress1}} I've
+  confirmed with Rdevel (2012-01-27) that it is impossible
+  to work around this error... you have to restart your R
+  session.\cr Prof Ripley: \dQuote{This is simply not
+  supported.  Lazy-load databases are cached, and you
+  cannot expect to change them during the R session once
+  they have been used.} More info, including 3 suggestions
+  here:
+  \url{http://r.789695.n4.nabble.com/Unable-to-reload-Rdoc-td4333063.html}
+  Hadley's \code{devtools::check_Rd} function will render
+  an Rd file without having to relaod it.
 }
 \author{
   Henrik Bengtsson, \email{henrikb@braju.com},
@@ -65,8 +78,9 @@ it already loaded. This is useful for developers. For more information see
 }
 \references{
   \url{https://stat.ethz.ch/pipermail/r-help/2002-January/018006.html}
+  \url{http://r.789695.n4.nabble.com/Unable-to-reload-Rdoc-td4333063.html}
 }
 \seealso{
-  See \code{\link[base]{library}}.
+  See \code{\link[base]{library}} \code{\link{unlibrary}}
 }
 
