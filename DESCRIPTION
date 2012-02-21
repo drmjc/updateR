@@ -35,3 +35,4 @@ Collate:
     'updateR-package.R'
     'updateR.R'
     'which.package.R'
+    'detach.all.R'

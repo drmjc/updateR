@@ -1,6 +1,7 @@
 export(available.packages.bioc)
 export(available.packages.cran)
 export(bioc.version)
+export(detach.all)
 export(edit.src.file)
 export(find.src.file)
 export(get.full.path)
