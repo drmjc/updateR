@@ -7,7 +7,7 @@
     check = FALSE, source = TRUE, binary = FALSE,
     winbinary = FALSE, install = TRUE,
     no.vignettes = FALSE, no.manual = FALSE,
-    no.docs = FALSE)
+    no.docs = FALSE, no.examples = FALSE)
 }
 \arguments{
   \item{package}{the name of the package to be updated.

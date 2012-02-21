@@ -65,7 +65,7 @@ updateR <- function(package, src.root=getOption("src.root"), lib.loc=NULL, warn.
 	binary=FALSE,
 	winbinary=FALSE, 
 	install=TRUE,
-	no.vignettes=FALSE, no.manual=FALSE, no.docs=FALSE) {
+	no.vignettes=FALSE, no.manual=FALSE, no.docs=FALSE, no.examples=FALSE) {
 	if ( !is.character(package) ) 
 		package <- as.character(substitute(package))
 	
@@ -96,7 +96,7 @@ updateR <- function(package, src.root=getOption("src.root"), lib.loc=NULL, warn.
 		stop("updateR.sh could not be found at", shQuote(exe))
 	}
 	
-	options <- sprintf("-l %s %s %s %s %s %s %s %s %s %s", 
+	options <- sprintf("-l %s %s %s %s %s %s %s %s %s %s %s", 
 						lib.loc, 
 						ifelse(roxygen,      "-r", ""), 
 						ifelse(check,        "-c", ""), 
@@ -106,6 +106,7 @@ updateR <- function(package, src.root=getOption("src.root"), lib.loc=NULL, warn.
 						ifelse(no.vignettes, "-g", ""),
 						ifelse(no.manual,    "-m", ""),
 						ifelse(no.docs,      "-d", ""),
+						ifelse(no.examples,  "-x", ""),
 						ifelse(install,      "-i", "")
 						)
 	options <- trim(gsub(" +", " ", options))
@@ -136,7 +137,7 @@ updateR <- function(package, src.root=getOption("src.root"), lib.loc=NULL, warn.
 # 2009-12-02: major updates and made into a package.
 # 2011-04-11: added flags to control --no-vignettes --no-manual --no-docs
 # 2011-07-04: added install option
-
+# 2012-02-21: added -x, --no-examples option.
 
 # Update a package which is contained within a package bundle (ie a meta.package).
 #
