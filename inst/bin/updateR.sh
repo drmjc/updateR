@@ -23,12 +23,14 @@
 # 2011-06-03: added roxygen support
 # 2011-09-21: added --vanilla flag, to skip reading .Rprofile.
 # 2011-11-17: updated to roxygen2 (v2.1) support
+# 2012-02-21: added -x, --no-examples option; escapes only the unescaped '%' chars in Rd files.
+
 usage() {
 	cat << EOF
 usage:
     updateR.sh -h
     updateR.sh [options] </path/to/package>
-    updateR.sh [-l </usr/local/R/library>] [-r] [-c] [-s] [-b] [-w] [-g] [-m] [-d] [-i] </path/to/package>
+    updateR.sh [-l </usr/local/R/library>] [-r] [-c] [-x] [-s] [-b] [-w] [-g] [-m] [-d] [-i] </path/to/package>
 
 OPTIONS
 -r: roxygenize the package.
@@ -39,6 +41,7 @@ OPTIONS
 -g: --no-vignettes
 -m: --no-manual
 -d: --no-docs
+-x: --no-examples (R CMD CHECK)
 -i: R CMD INSTALL the package
 EOF
 }
@@ -64,7 +67,7 @@ if [ $# -eq "0" ]; then
 	exit 1
 fi
 
-while getopts "l:rcsbwhgmdi" option; do
+while getopts "l:rcsbwhgmdxi" option; do
 	# echo "Processing option $OPTARG $OPTIND $OPTVAL"
 	case "${option}" in
 		l) R_LIB="${OPTARG}";;
@@ -76,6 +79,7 @@ while getopts "l:rcsbwhgmdi" option; do
 		g) OPTIONS="${OPTIONS} --no-vignettes";;
 		m) OPTIONS="${OPTIONS} --no-manual";;
 		d) OPTIONS="${OPTIONS} --no-docs";;
+		x) OPTIONS="${OPTIONS} --no-examples";;
 		i) INSTALL=0;;
 		h) usage; exit 1;;
 		[?]) usage; exit 1;;
@@ -211,8 +215,10 @@ if [ $ROXYGENIZE -eq 0 ]; then
 			rmdir ${PACKAGE_PATH}/inst/doc 2> /dev/null
 			
 			# % characters in Rd files need to be escaped (\%).
-			# unescaped %'s can sneak in, eg if a default param has a % in it, which ends up in the \usage section of Rd
-			perl -pi -e 's/%/\\%/' ${PACKAGE_PATH}/man/*Rd
+			# roxygen2 gets this right in the usage section, but not so well in arguments or other
+			# section -- should this be up to the author??
+			perl -pi -e 's/([^\\])%/$1\\%/' ${PACKAGE_PATH}/man/*Rd
+			perl -pi -e 's/^%/\\%/' ${PACKAGE_PATH}/man/*Rd
 			perl -pi -e 's/export\((.*<-)\)/export("$1")/' ${PACKAGE_PATH}/NAMESPACE
 		fi
 	fi
