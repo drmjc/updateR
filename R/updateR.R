@@ -9,11 +9,13 @@
 #' 
 #' I tend to edit my source code in an external editor (TextMate), then will want to incorporate
 #' those code changes into my current R session. A simple updateR("my.package", source=TRUE, install=TRUE),
-#' causes the package to be built and then installed. Optional roxygenizing, and package checking
-#' can occur, prior to package building.
+#' causes the package to be built and then installed. Optional roxygenizing, package checking, 
+#' can occur, prior to package building, and 
+#' package testing (via \code{testthat}) after installing
 #'
-#' Roxygen is an inline documentation engine which builds \code{Rd} files from structured comment 
-#' headers above each function. Roxygen creates \code{Rd} files, and updates the \code{NAMESPACE} and
+#' @section Roxygen2:
+#' roxygen2 is an inline documentation engine which builds \code{Rd} files from structured comment 
+#' headers above each function. roxygen2 creates \code{Rd} files, and updates the \code{NAMESPACE} and
 #' the Date and Collates fields in the \code{DESCRIPTION} files, however it normally does this in a 
 #' separate copy of the package.
 #' \code{updateR} removes all previously existing \code{Rd} files & replaces them with new \code{Rd} 
@@ -27,12 +29,17 @@
 #' Currently, \code{\link{relibrary}} is unable to update the R documentation objects, giving 
 #' internal errors.
 #'
-#' in case of epic fail: 
+#' @section in case of epic fail: 
 #' \verb{
 #'    bash$ ~/src/R/updateR/inst/bin/updateR.sh ~/src/R/updateR
 #'       R> relibrary("updateR")
 #' }
 #'
+#' @section TODO:
+#' \begin{itemize}
+#'   \item{devtools}{Investigate more of the \code{devtools} functions for build/check/install.}
+#' \end{itemize}
+#' 
 #' @param package the name of the package to be updated. either quoted, or unquoted.
 #' @param src.root the path to the root of the src files.
 #' @param lib.loc where to install the library. Defaults to .libPaths()[1]
@@ -44,6 +51,9 @@
 #' @param binary logical: Build a binary package?
 #' @param winbinary logical: Build a windows binary package?
 #' @param install logical: \code{R CMD INSTALL} the package?
+#' @param test logical: run a \code{testthat::\link[testthat]{test_package}} suite, 
+#'   on the installed version of the package? Note this is done after this function
+#'   is given the opportunity to install the package.
 #' @param no.vignettes logical: if \dQuote{TRUE}, turn off the creation of vignettes
 #' @param no.manual logical: if \dQuote{TRUE}, turn off the creation of PDF manuals
 #' @param no.docs if TRUE, logical: if \dQuote{TRUE}, turn off the creation of documentation
@@ -65,6 +75,7 @@ updateR <- function(package, src.root=getOption("src.root"), lib.loc=NULL, warn.
 	binary=FALSE,
 	winbinary=FALSE, 
 	install=TRUE,
+	test=FALSE,
 	no.vignettes=FALSE, no.manual=FALSE, no.docs=FALSE, no.examples=FALSE) {
 	if ( !is.character(package) ) 
 		package <- as.character(substitute(package))
@@ -96,7 +107,7 @@ updateR <- function(package, src.root=getOption("src.root"), lib.loc=NULL, warn.
 		stop("updateR.sh could not be found at", shQuote(exe))
 	}
 	
-	options <- sprintf("-l %s %s %s %s %s %s %s %s %s %s %s", 
+	options <- sprintf("-l %s %s %s %s %s %s %s %s %s %s %s %s", 
 						lib.loc, 
 						ifelse(roxygen,      "-r", ""), 
 						ifelse(check,        "-c", ""), 
@@ -107,7 +118,8 @@ updateR <- function(package, src.root=getOption("src.root"), lib.loc=NULL, warn.
 						ifelse(no.manual,    "-m", ""),
 						ifelse(no.docs,      "-d", ""),
 						ifelse(no.examples,  "-x", ""),
-						ifelse(install,      "-i", "")
+						ifelse(install,      "-i", ""),
+						ifelse(test,         "-t", "")
 						)
 	options <- trim(gsub(" +", " ", options))
 	cmd <- sprintf('%s %s %s > /dev/stderr; echo $?', 
@@ -125,7 +137,8 @@ updateR <- function(package, src.root=getOption("src.root"), lib.loc=NULL, warn.
 	if( install ) {
 		if( retval == 0 ) {
 			cat("Reloading", package, "\n")
-			relibrary(package, character.only=TRUE, warn.conflicts=warn.conflicts)
+			# relibrary(package, character.only=TRUE, warn.conflicts=warn.conflicts)
+			devtools::reload(package)
 		}
 		else {
 			cat("Library build failed. not reloaded.\n")
@@ -138,77 +151,81 @@ updateR <- function(package, src.root=getOption("src.root"), lib.loc=NULL, warn.
 # 2011-04-11: added flags to control --no-vignettes --no-manual --no-docs
 # 2011-07-04: added install option
 # 2012-02-21: added -x, --no-examples option.
+# 2012-03-16: added a -t flag for running testthat::test_package
+#             update the Date field in the DESCRIPTION file every time rox/build is run
+#             uses devtools::reload to reload the package
 
-# Update a package which is contained within a package bundle (ie a meta.package).
-#
-# DEPRECATED, since meta packages were dropped circa R 2.11
-#
-# I use the notation package and meta.package to denote the package to be updated, and the container itself.
-#
-# Parameters:
-#	package: the package to be updated.
-#	meta.package: the container/meta package which contains the package to be updated.
-#	src.root: the path to the root of the src files.
-#	lib.loc: where to install the library. Defaults to .libPaths()[1]
-#	warn.conflicts: see relibrary
-#	upload: upload the new tar.gz file to /pwbc/src/R
-#
-# Details:
-#	the entire meta-package gets rebuilt, then the package of interest only gets reloaded.
-#
-# Mark Cowley, 2009-10-12
-# 2009-12-02: major updates since this is now part of a package.
-#
-updateR.metapkg <- function(package, meta.package, src.root=getOption("src.root"), lib.loc=.libPaths()[1], 
-	warn.conflicts = TRUE) {
-	if( missing(package) || missing(meta.package) ) {
-		stop("You must specify both the meta.package name, and the meta-meta.package name.\n")
-	}
-	
-	if ( !is.character(package) ) 
-		package <- as.character(substitute(package))
-	if ( !is.character(meta.package) ) 
-		meta.package <- as.character(substitute(meta.package))
-	
-	# exe <- file.path(.path.meta.package('updateR'), 'bin', 'updateR.sh')
-	# cmd <- sprintf("%s %s > /dev/null && echo $?", exe, meta.package)
-	# retval <- system(cmd, intern=TRUE)
-	# retval <- as.numeric(retval)
-	if( !file.exists(src.root) ) {
-		stop("You have not set src.root properly. Directory does not exist. Try setting options(src.root='~/src/R')")
-	}
-	src.root <- path.expand(src.root)
-	
-	meta.package.path <- file.path(src.root, meta.package)
-	if( !file.exists(meta.package.path) ) {
-		stop("The meta-package code could not be found at", shQuote(meta.package.path))
-	}
-	package.path <- file.path(src.root, meta.package, package)
-	if( !file.exists(package.path) ) {
-		stop(sprintf("Package %s does not exist within the %s metapackage.\n", package, meta.package.path))
-	}
 
-	if( !file.exists(lib.loc) ) {
-		stop("lib.loc must be specified. Currently it's: ", shQuote(lib.loc))
-	}
-	lib.loc <- path.expand(lib.loc)
-
-	exe <- file.path(.path.package('updateR'), 'bin', 'updateR.sh')
-	if( !file.exists(exe) ) {
-		stop("updateR.sh could not be found at", shQuote(exe))
-	}
-	
-	cmd <- sprintf('%s -l %s -s %s > /dev/null && echo $?', exe, lib.loc, meta.package.path)
-	retval <- system(cmd, intern=TRUE)
-	if( length(retval) == 0 )
-		stop("The updateR.sh command failed with no output.\n")
-	retval <- as.numeric(retval)
-
-	if( retval == 0 ) {
-		cat("Reloading", package, "\n")
-		relibrary(package, character.only=TRUE, warn.conflicts=warn.conflicts)
-	}
-	else {
-		cat("Library build failed. not reloaded.\n")
-	}
-}
+# # Update a package which is contained within a package bundle (ie a meta.package).
+# #
+# # DEPRECATED, since meta packages were dropped circa R 2.11
+# #
+# # I use the notation package and meta.package to denote the package to be updated, and the container itself.
+# #
+# # Parameters:
+# #	package: the package to be updated.
+# #	meta.package: the container/meta package which contains the package to be updated.
+# #	src.root: the path to the root of the src files.
+# #	lib.loc: where to install the library. Defaults to .libPaths()[1]
+# #	warn.conflicts: see relibrary
+# #	upload: upload the new tar.gz file to /pwbc/src/R
+# #
+# # Details:
+# #	the entire meta-package gets rebuilt, then the package of interest only gets reloaded.
+# #
+# # Mark Cowley, 2009-10-12
+# # 2009-12-02: major updates since this is now part of a package.
+# #
+# updateR.metapkg <- function(package, meta.package, src.root=getOption("src.root"), lib.loc=.libPaths()[1], 
+# 	warn.conflicts = TRUE) {
+# 	if( missing(package) || missing(meta.package) ) {
+# 		stop("You must specify both the meta.package name, and the meta-meta.package name.\n")
+# 	}
+# 	
+# 	if ( !is.character(package) ) 
+# 		package <- as.character(substitute(package))
+# 	if ( !is.character(meta.package) ) 
+# 		meta.package <- as.character(substitute(meta.package))
+# 	
+# 	# exe <- file.path(.path.meta.package('updateR'), 'bin', 'updateR.sh')
+# 	# cmd <- sprintf("%s %s > /dev/null && echo $?", exe, meta.package)
+# 	# retval <- system(cmd, intern=TRUE)
+# 	# retval <- as.numeric(retval)
+# 	if( !file.exists(src.root) ) {
+# 		stop("You have not set src.root properly. Directory does not exist. Try setting options(src.root='~/src/R')")
+# 	}
+# 	src.root <- path.expand(src.root)
+# 	
+# 	meta.package.path <- file.path(src.root, meta.package)
+# 	if( !file.exists(meta.package.path) ) {
+# 		stop("The meta-package code could not be found at", shQuote(meta.package.path))
+# 	}
+# 	package.path <- file.path(src.root, meta.package, package)
+# 	if( !file.exists(package.path) ) {
+# 		stop(sprintf("Package %s does not exist within the %s metapackage.\n", package, meta.package.path))
+# 	}
+# 
+# 	if( !file.exists(lib.loc) ) {
+# 		stop("lib.loc must be specified. Currently it's: ", shQuote(lib.loc))
+# 	}
+# 	lib.loc <- path.expand(lib.loc)
+# 
+# 	exe <- file.path(.path.package('updateR'), 'bin', 'updateR.sh')
+# 	if( !file.exists(exe) ) {
+# 		stop("updateR.sh could not be found at", shQuote(exe))
+# 	}
+# 	
+# 	cmd <- sprintf('%s -l %s -s %s > /dev/null && echo $?', exe, lib.loc, meta.package.path)
+# 	retval <- system(cmd, intern=TRUE)
+# 	if( length(retval) == 0 )
+# 		stop("The updateR.sh command failed with no output.\n")
+# 	retval <- as.numeric(retval)
+# 
+# 	if( retval == 0 ) {
+# 		cat("Reloading", package, "\n")
+# 		relibrary(package, character.only=TRUE, warn.conflicts=warn.conflicts)
+# 	}
+# 	else {
+# 		cat("Library build failed. not reloaded.\n")
+# 	}
+# }
