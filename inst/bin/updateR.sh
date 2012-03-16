@@ -24,6 +24,7 @@
 # 2011-09-21: added --vanilla flag, to skip reading .Rprofile.
 # 2011-11-17: updated to roxygen2 (v2.1) support
 # 2012-02-21: added -x, --no-examples option; escapes only the unescaped '%' chars in Rd files.
+#             added unescapedPercentWarning to test for unescaped % characters in Rd files.
 
 usage() {
 	cat << EOF
@@ -57,6 +58,7 @@ SOURCE=1
 BINARY=1
 WINBINARY=1
 INSTALL=1
+TESTTHAT=1
 OPTIONS=""
 
 #
@@ -67,7 +69,7 @@ if [ $# -eq "0" ]; then
 	exit 1
 fi
 
-while getopts "l:rcsbwhgmdxi" option; do
+while getopts "l:rcsbwhgmdxti" option; do
 	# echo "Processing option $OPTARG $OPTIND $OPTVAL"
 	case "${option}" in
 		l) R_LIB="${OPTARG}";;
@@ -80,6 +82,7 @@ while getopts "l:rcsbwhgmdxi" option; do
 		m) OPTIONS="${OPTIONS} --no-manual";;
 		d) OPTIONS="${OPTIONS} --no-docs";;
 		x) OPTIONS="${OPTIONS} --no-examples";;
+		t) TESTTHAT=0;;
 		i) INSTALL=0;;
 		h) usage; exit 1;;
 		[?]) usage; exit 1;;
@@ -100,11 +103,11 @@ if [ $WINBINARY -eq 0 ]; then
 fi
 
 # make sure we have pdflatex, otherwise specify --no-manual
-hash pdflatex 2>&- || OPTIONS="${OPTIONS} --no-manual"
+hash pdflatex 2>&- || OPTIONS="${OPTIONS} --no-manual --no-vignettes"
 
 # we need to do at least 1 action
-if [ $ROXYGENIZE -eq 1 -a $CHECK -eq 1 -a $SOURCE -eq 1 -a $BINARY -eq 1 -a $WINBINARY -eq 1 -a $INSTALL -eq 1 ]; then
-	echo "You must specify at least one action: -r, -c, {-b,-s,-w}, -i"
+if [ $ROXYGENIZE -eq 1 -a $CHECK -eq 1 -a $SOURCE -eq 1 -a $BINARY -eq 1 -a $WINBINARY -eq 1 -a $INSTALL -eq 1 -a $TESTTHAT -eq 1 ]; then
+	echo "You must specify at least one action: -r, -c, {-b,-s,-w}, -i, -t"
 	usage
 	exit 10
 fi
@@ -168,9 +171,35 @@ function hiddenRdWarning {
 	[ "$(find $1/man -type f -maxdepth 1 -name "\.*.Rd")" ] && echo "WARNING: hidden Rd file(s) detected. You should use @noRd, or @rdname tags & delete the offending files"
 }
 
+function unescapedPercentWarning {
+	matches=`egrep -l '[^\]%' $1/man/*Rd | grep -v ^$`
+	if [ ${#matches[*]} -gt 0 ]; then
+		for (( i=0; i<${#matches[*]}; i++ )); do
+			eval arg=${matches[$i]}
+			if [ ! -z "$arg" ]; then
+				echo "WARNING: unescaped % found in: $arg"
+			fi
+		done
+	fi
+}
+
 function roxygenize {
 	Rscript --vanilla -e "if(require(methods) && require(roxygen2)) roxygenize(\"$1\")"
 }
+
+# Update the Date field in the DESCRIPTION file.
+# Expects the format "Date: 2012-03-16"
+function updateDateStamp {
+	date=`date +%F`
+	perl -pi -e "s/Date: +[0-9].*/Date: $date/" "$1"/DESCRIPTION
+}
+
+
+# Update the Date field in the DESCRIPTION file, IF we are performing a modifier
+# option.
+if [[ $ROXYGENIZE -eq 0 || $SOURCE -eq 0 || $BINARY -eq 0 ]]; then
+	updateDateStamp "${PACKAGE_PATH}"
+fi
 
 #
 # Roygenize the package.
@@ -224,6 +253,7 @@ if [ $ROXYGENIZE -eq 0 ]; then
 	fi
 	
 	hiddenRdWarning ${PACKAGE_PATH}
+	unescapedPercentWarning ${PACKAGE_PATH}
 fi
 
 #
@@ -240,6 +270,9 @@ if [ $CHECK -eq 0 ]; then
 		exit 205
 	else
 		rm -rf "${PACKAGE_PATH}.Rcheck"
+
+		hiddenRdWarning ${PACKAGE_PATH}
+		unescapedPercentWarning ${PACKAGE_PATH}
 	fi
 fi
 
@@ -313,6 +346,17 @@ if [ $INSTALL -eq 0 ]; then
 		rm $OUT
 		exit 202
 	fi
+fi
+
+# run the testthat suite upon this package.
+function test_package {
+	pkg=`basename "$1"`
+	Rscript --vanilla -e "suppressPackageStartupMessages(library(testthat)); suppressPackageStartupMessages(library($pkg)); test_package(\"$pkg\")"
+}
+
+# run TESTTHAT suite?
+if [ $TESTTHAT -eq 0 ]; then
+	test_package ${PACKAGE_PATH}
 fi
 
 exit 0
