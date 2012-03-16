@@ -2,3 +2,29 @@ v1.0.1 (2011-08-01)
 roxygen edits, (especially which.package)
 v1.0.2 (2011-08-25)
 updates to updateR.sh to handle Rd files beginning with dot
+dropped lazyload as per R 2.13
+v1.0.3
+bug fix where Rd's weren't moved to tmpdir
+added a warning if there are hidden .Rd files detected
+removed all code that tried to backup the .Rd files (but gave errors if there were no hidden .Rd's)
+robust backup/restore during roxygen, include Rd files starting with dot
+v1.0.4
+added --vanilla flag to all R CMD's, thereby avoiding reading the .Rprofile
+edit.func.R: wrapped package name in quotes in the final cat(sprintf( command
+relibrary: wrote recursive version of loaded.dependencies.
+unlibrary:
+- unload packages using the updated unlibrary
+- simplified & using detach
+- This still doesn't get around the dreaded error: 
+  "Error in fetch(key) : internal error -3 in R_decompress1"
+- According to Ripley's reply, it's impossible to do so:
+  (http://r.789695.n4.nabble.com/Unable-to-reload-Rdoc-td4333063.html)
+  "This is simply not supported.  Lazy-load databases are cached, and you
+  cannot expect to change them during the R session once they have been used."
+v1.0.5 (2012-03-16)
+added -x, --no-examples option
+more careful escaping of '%' characters
+added detach.all
+added -t flag
+auto-update Date field
+added unescapedPercentWarning

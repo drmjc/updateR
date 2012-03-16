@@ -3,8 +3,7 @@
 \title{Reloads a package}
 \usage{
   relibrary(package, character.only = FALSE,
-    warn.conflicts = TRUE, unload = TRUE, force = FALSE,
-    ...)
+    warn.conflicts = TRUE, ...)
 }
 \arguments{
   \item{package}{Name or character string giving the name
@@ -18,17 +17,6 @@
   printed about conflicts from reattaching of the package,
   unless that package contains an object
   \code{.conflicts.OK}. Default value is \code{FALSE}.}
-
-  \item{unload}{logical: whether or not to attempt to
-  unload the namespace when a package is being detached.
-  If the package has a namespace and \code{unload} is
-  \code{TRUE}, then \code{\link[base]{detach}} will attempt
-  to unload the namespace \emph{via}
-  \code{\link[base]{unloadNamespace}}: if the namespace is
-  imported by another namespace or \code{unload} is
-  \code{FALSE}, no unloading will occur.}
-
-  \item{force}{logical: See \code{\link{detach}}.}
 
   \item{\dots}{Any other arguments that
   \code{\link[base]{library}} accepts.}

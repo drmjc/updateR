@@ -5,7 +5,7 @@
   updateR(package, src.root = getOption("src.root"),
     lib.loc = NULL, warn.conflicts = TRUE, roxygen = FALSE,
     check = FALSE, source = TRUE, binary = FALSE,
-    winbinary = FALSE, install = TRUE,
+    winbinary = FALSE, install = TRUE, test = TRUE,
     no.vignettes = FALSE, no.manual = FALSE,
     no.docs = FALSE, no.examples = FALSE)
 }
@@ -38,6 +38,12 @@
   \item{install}{logical: \code{R CMD INSTALL} the
   package?}
 
+  \item{test}{logical: run a
+  \code{testthat::\link[testthat]{test_package}} suite, on
+  the installed version of the package? Note this is done
+  after this function is given the opportunity to install
+  the package.}
+
   \item{no.vignettes}{logical: if \dQuote{TRUE}, turn off
   the creation of vignettes}
 
@@ -63,12 +69,18 @@
   changes into my current R session. A simple
   updateR("my.package", source=TRUE, install=TRUE), causes
   the package to be built and then installed. Optional
-  roxygenizing, and package checking can occur, prior to
-  package building.
-
-  Roxygen is an inline documentation engine which builds
+  roxygenizing, package checking, can occur, prior to
+  package building, and package testing (via
+  \code{testthat}) after installing
+}
+\note{
+  Currently, \code{\link{relibrary}} is unable to update
+  the R documentation objects, giving internal errors.
+}
+\section{Roxygen2}{
+  roxygen2 is an inline documentation engine which builds
   \code{Rd} files from structured comment headers above
-  each function. Roxygen creates \code{Rd} files, and
+  each function. roxygen2 creates \code{Rd} files, and
   updates the \code{NAMESPACE} and the Date and Collates
   fields in the \code{DESCRIPTION} files, however it
   normally does this in a separate copy of the package.
@@ -81,13 +93,16 @@
   \code{\link[Rd2roxygen]{Rd2roxygen}} package for
   converting from \code{Rd} to \code{roxygen} comments.
 }
-\note{
-  Currently, \code{\link{relibrary}} is unable to update
-  the R documentation objects, giving internal errors.
 
-  in case of epic fail: \verb{ bash$
-  ~/src/R/updateR/inst/bin/updateR.sh ~/src/R/updateR R>
-  relibrary("updateR") }
+\section{in case of epic fail}{
+  \verb{ bash$ ~/src/R/updateR/inst/bin/updateR.sh
+  ~/src/R/updateR R> relibrary("updateR") }
+}
+
+\section{TODO}{
+  \begin{itemize} \item{devtools}{Investigate more of the
+  \code{devtools} functions for build/check/install.}
+  \end{itemize}
 }
 \examples{
 \dontrun{

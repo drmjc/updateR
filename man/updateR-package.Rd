@@ -25,8 +25,11 @@
   single file, suitable for sharing.
 
   \tabular{ll}{ Package: \tab updateR\cr Type: \tab
-  Package\cr Version: \tab 1.0\cr Date: \tab 2011-07-19\cr
-  License: \tab GPL\cr LazyLoad: \tab yes\cr }
+  Package\cr Version: \tab
+  \Sexpr[stage=build]{packageDescription("updateR")$Version}\cr
+  Date: \tab \Sexpr[stage=build]{format(Sys.time(),
+  "\%Y-\%m-\%d")}\cr License: \tab GPL\cr LazyLoad: \tab
+  yes\cr }
 }
 \author{
   Mark Cowley Maintainer: Mark Cowley

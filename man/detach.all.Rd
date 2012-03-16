@@ -11,7 +11,7 @@
   \code{.GlobalEnv}}
 }
 \value{
-  invisibly returns the vector of package names that are
+  invisibly returns the vector of package names that were
   detached
 }
 \description{
