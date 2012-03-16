@@ -17,8 +17,8 @@
 #' \tabular{ll}{ 
 #' Package: \tab updateR\cr
 #' Type: \tab Package\cr
-#' Version: \tab 1.0\cr
-#' Date: \tab 2011-07-19\cr
+#' Version: \tab \Sexpr[stage=build]{packageDescription("updateR")$Version}\cr
+#' Date: \tab \Sexpr[stage=build]{format(Sys.time(), "\%Y-\%m-\%d")}\cr
 #' License: \tab GPL\cr
 #' LazyLoad: \tab yes\cr
 #' }
