@@ -39,41 +39,17 @@
 #' @param warn.conflicts If \code{TRUE}, warnings are printed about conflicts
 #'   from reattaching of the package, unless that package contains an object
 #'   \code{.conflicts.OK}. Default value is \code{FALSE}.
-#' @param unload logical: whether or not to attempt to
-#'        unload the namespace when a package is being detached.  If
-#'        the package has a namespace and \code{unload} is \code{TRUE}, then
-#'        \code{\link[base]{detach}} will attempt to unload the namespace \emph{via}
-#'        \code{\link[base]{unloadNamespace}}: if the namespace is imported by another
-#'        namespace or \code{unload} is \code{FALSE}, no unloading will occur.
-#' @param force logical: See \code{\link{detach}}.
 #' @param \dots Any other arguments that \code{\link[base]{library}} accepts.
 #' @author Henrik Bengtsson, \email{henrikb@@braju.com},
 #'   \url{http://www.braju.com/R/}, updated by Mark Cowley.
 #' @seealso See \code{\link[base]{library}} \code{\link{unlibrary}}
 #' @export
-relibrary <- function(package, character.only=FALSE, warn.conflicts=TRUE, unload=TRUE, force=FALSE, ...) {
+relibrary <- function(package, character.only=FALSE, warn.conflicts=TRUE, ...) {
 	if (!character.only)
 		package <- as.character(substitute(package));
 
 	options.relibrary <- options(relibrary=package)[[1]];
 
-	# # with namespaces, you can't detach a package if other packages
-	# # depend on it. These dependencies will need detaching, then reattaching.
-	# # @TODO - respect the original order of those dependencies in search()
-	# # @TODO - make this recursive, since these dependencies may have their own dependencies
-	# loaded.dependencies <- function(package) {
-	# 	# which packages depend upon this package that are also loaded
-	# 	lp <- grep("package", search(), value=T)
-	# 	lp <- sub("package:", "", lp)
-	# 	if( ! package %in% lp ) return( character(0) )
-	# 	ip <- as.data.frame(installed.packages(), stringsAsFactors=FALSE)
-	# 	ip <- subset(ip, package %in% lp)
-	# 	depends <- strsplit(ip$Depends, ", ")
-	# 	names(depends) <- ip$Package
-	# 	idx <- which(sapply(depends, function(x) package %in% x))
-	# 	pkg.dependencies <- names(idx)
-	# 	pkg.dependencies
-	# }
 	loaded.dependencies <- function(pkg) {
 		require(tools) || stop("required package 'tools' is not installed")
 
@@ -107,7 +83,7 @@ relibrary <- function(package, character.only=FALSE, warn.conflicts=TRUE, unload
 		
 		hasNamespace <- packageHasNamespace(package, dirname(.path.package(package)))
 		cat(sprintf("%s %s a namespace...\n", package, ifelse(hasNamespace, "has", "lacks")))
-		unlibrary(package)
+		unlibrary(package, character.only=TRUE)
 	}
 
 	if( length(pkg.dependencies) > 0 ) {
@@ -121,6 +97,8 @@ relibrary <- function(package, character.only=FALSE, warn.conflicts=TRUE, unload
 }
 ############################################################################
 # HISTORY:
+# 2012-02-29:
+# - dropped the no longer used unload and force arguments (unlibrary sets both to TRUE)
 # 2012-01-24:
 # - wrote recursive version of loaded.dependencies.
 # - unload packages using the updated unlibrary
