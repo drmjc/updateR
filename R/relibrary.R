@@ -71,6 +71,7 @@ relibrary <- function(package, character.only=FALSE, warn.conflicts=TRUE, ...) {
 	# If package is already attached, then detach its loaded dependencies, then itself
 	pkgName <- paste(sep="", "package:", package);
 	pos <- match(pkgName, search());
+	pkg.dependencies <- NULL
 	if (!is.na(pos)) {
 		pkg.dependencies <- loaded.dependencies(package)
 		if( length(pkg.dependencies) > 0 ) {
