@@ -182,9 +182,9 @@ updateR <- function(package, src.root=getOption("src.root"), lib.loc=NULL, warn.
 	# reload the package in the current session
 	if( install ) {
 		if( retval == 0 ) {
-			cat("Reloading", package, "\n")
+			cat("Reloading", package.path, "\n")
 			# relibrary(package, character.only=TRUE, warn.conflicts=warn.conflicts)
-			reload(package)
+			reload(package.path)
 		}
 		else {
 			cat("Library build failed. not reloaded.\n")
@@ -203,6 +203,8 @@ updateR <- function(package, src.root=getOption("src.root"), lib.loc=NULL, warn.
 # 2012-04-05: added -d flag for DEPLOY to enzo.
 # 			  tidied code
 #             added @importFrom
+# 2012-05-02: reload needs the path to the package, not the package name. 
+#             I think this coincides with an update made within R 2.14
 
 # # Update a package which is contained within a package bundle (ie a meta.package).
 # #
