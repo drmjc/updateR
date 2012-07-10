@@ -1,18 +1,38 @@
 #!/bin/bash
 #
-# Generic shell script to build and install R packages.
-# For a given package, you can generate roxygen documentation, then do an 
-# R CMD CHECK, R CMD build (source/binary/windows), then R CMD install.
-# All you need is the path to the package itself.
-#
+# Generic shell script to build, install, check, test & deploy R packages.
+# 
+# For the path to the source code directory, you can:
+# generate roxygen2 documentation (-r), 
+# R CMD CHECK the source code (-c),
+# R CMD build (source -s/binary -b/windows -w),
+# R CMD CHECK the bundle (-C),
+# R CMD INSTALL the bundle (-i),
+# run testthat suite (-t)
+# deploy (ie remote R CMD INSTALL, -d) the bundle
+# 
+# Cool features:
+# if roxygen2 fails, the old Rd/NAMESPACE/DESCRIPTION files are re-instated
+# the Date in the DESCRIPTION file is auto-updated
+# you can turn off the creation of manuals & vignettes for speed
+# you can turn off exmaple testing in the CHECK's
+# it's svn friendly
+# -- ie it doesn't go building in different locations & killing the svn history
+# you can build source and binary packages simultaneously
+# -- though if you choose both (-b -s), then only the source package will be checked (-C), installed (-i), tested (-t), or deployed (-d).
+#    If you want these things to happen for the binary package, then you can't use -s
+# it cleans up the build/partial.rds files which are created during BUILD, if \Sexpr's are found
+# 
+# Notes:
+# Currently we don't build windows binary packages, but the options are in place to do so.
+# 
 # usage:
-#	updateR.sh [options] /path/to/package
-#
-# todo: implement a versioning updater system
-# todo: update the datestamp in the DESCRIPTION file
-#
+#	updateR.sh -h
+# 
 # Mark Cowley
-#
+################################################################################
+
+################################################################################
 # CHANGELOG:
 # 2008-11-10: v1
 # 2009-06-15: made this cross platform by choosing the R_LIB dependant upon the underlying O/S
@@ -26,11 +46,59 @@
 # 2012-02-21: added -x, --no-examples option; escapes only the unescaped '%' chars in Rd files.
 #             added unescapedPercentWarning to test for unescaped % characters in Rd files.
 # 2012-04-05: added -d deploy flag, originally from mjc's deploy.sh
+# 2012-06-14: added R CMD CHECK --as-cran on the package bundle
+# 2012-07-10: v1.1.0
+#             determine package name by parsing DESCRIPTION, not from basename $PACKAGE_PATH
+#             changed deploy to accept a string argument. tested with hostname, username@hostname
+#             updated BINARY package building to work in R >= 2.14
+#             only allow BINARY (-b) or SOURCE (-s), not both.
+#             simplified roxygenize()
+#             delete pkname/build folders which are created at BUILD time, when \Sexpr's are found
+################################################################################
+
+################################################################################
+# TODO:
+# - implement a versioning updater system
+# - windows binary package building
+# - add a -p password option for deploying to remote hosts
+# - force minimum R version to 2.14.0 in DESCRIPTION
+################################################################################
+
+
+################################################################################
+# REFERENCES
+# building source bundles: http://cran.r-project.org/doc/manuals/R-exts.html#Building-binary-packages
+# build/partial.rdb files : http://cran.r-project.org/doc/manuals/R-exts.html#Building-package-tarballs
+# 
+################################################################################
 
 
 ################################################################################
 # FUNCTIONS
 ################################################################################
+usage () {
+	cat << EOF
+usage:
+    updateR.sh -h
+    updateR.sh [options] </path/to/package>
+    updateR.sh [-l </usr/local/R/library>] [-r] [-c] [-x] [-s] [-b] [-w] [-g] [-m] [-C] [-i] [-t] [-d username@hostname] </path/to/package>
+
+OPTIONS
+-r: roxygenize the package source code.
+-c: R CMD CHECK the package source code.
+-s: build source package. -s,-b are mutually exclusive
+-b: build MAC binary package. -s,-b are mutually exclusive
+-w: build WINDOWS binary package (currently unsupported).
+-g: --no-vignettes (R CMD build)
+-m: --no-manual    (R CMD build)
+-d: --no-docs      (R CMD build)
+-x: --no-examples  (R CMD CHECK)
+-C: R CMD CHECK --as-cran on the package bundle.
+-i: R CMD INSTALL the package
+-t: testthat the installed version of the package (runs after -i)
+-d: deploy the source package to a remote host. You can specify just the hostname, or username@hostname
+EOF
+}
 
 # cause execution to terminate, with an optional message,
 # and optional error code.
@@ -40,43 +108,8 @@ die () {
 	msg="######### ABORTING: ${1-Unexpected error}"
 	exitcode=${2-1}
 	echo >&2 "$msg"
+	usage
 	exit $exitcode
-}
-
-# deploy an R package in .tar.gz format to a host. this uses scp, ssh and R
-# on the host machine.
-# $1 = TGZ name
-# $2 = host
-# $3 = path to R on host
-deploypkg () {
-	TGZ=$1
-	HOST=${2-enzo}
-	R=${3-R}
-	[ -f "$TGZ" ] || {die "$TGZ does not exist"}
-	scp $TGZ ${USER}@${HOST}:/tmp
-	ssh ${USER}@${HOST} "cd /tmp && ${R} --vanilla CMD INSTALL $TGZ && rm $TGZ"
-}
-
-usage() {
-	cat << EOF
-usage:
-    updateR.sh -h
-    updateR.sh [options] </path/to/package>
-    updateR.sh [-l </usr/local/R/library>] [-r] [-c] [-x] [-s] [-b] [-w] [-g] [-m] [-d] [-i] [-d] </path/to/package>
-
-OPTIONS
--r: roxygenize the package.
--c: R CMD CHECK the package.
--s: build source package
--b: build MAC binary package
--w: build WINDOWS binary package (currently unsupported).
--g: --no-vignettes
--m: --no-manual
--d: --no-docs
--x: --no-examples (R CMD CHECK)
--i: R CMD INSTALL the package
--d: deploy the source package to the default host
-EOF
 }
 
 # print the values of the variables after parsing that getopt's
@@ -84,12 +117,14 @@ function debug_input () {
 	cat <<EOF
 	args="$@"
 	num remaining args after reading options=$#
+	PACKAGE_NAME=$PACKAGE_NAME
 	PACKAGE_PATH=$PACKAGE_PATH
-	PACKAGE=$PACKAGE
-	PACKAGE_DIR= $PACKAGE_DIR
+	PACKAGE_DIR=$PACKAGE_DIR
+	PACKAGE_VERSION=$PACKAGE_VERSION
 	R_LIB=$R_LIB
 	ROXYGENIZE=$ROXYGENIZE
-	CHECK=$CHECK
+	CHECK_SOURCE=$CHECK_SOURCE
+	CHECK_PACKAGE=$CHECK_PACKAGE
 	SOURCE=$SOURCE
 	BINARY=$BINARY
 	WINBINARY=$WINBINARY
@@ -104,12 +139,28 @@ EOF
 
 # backup/reinstate those files that roxygen will perturb
 # during an R CMD ROXYGENIZE
+# $1 = package path
+# $2 = temp backup path
 function backupRoxygen {
-	# $1 = from, $2 = to
 	cp -f $1/DESCRIPTION $2/DESCRIPTION
-	[ -f $1/NAMESPACE ] && cp -f $1/NAMESPACE $2/NAMESPACE
-	[ -d $1/man ] && [ "$(ls -A $1/man/*Rd)" ] && mkdir $2/man && mv -f $1/man/*Rd $2/man
+	[[ -f $1/NAMESPACE ]] && cp -f $1/NAMESPACE $2/NAMESPACE
+	# note you can't just mv these folders around, as you'll mess with any .svn folders.
+	if [[ -d $1/man ]]; then
+		if [[ ! -d $2/man ]]; then
+			mkdir $2/man
+		fi
+		find $1/man -type f -iname '*Rd' -exec mv {} $2/man \;
+	fi
 }
+
+# restore a previously backed up set of Rd,NAMESPACE,DESCRIPTION files
+# $1 = package path
+# $2 = temp backup path
+function restoreRoxygen {
+	find $1/man -type f -iname '*Rd' -delete
+	backupRoxygen ${2} ${1}
+}
+
 
 # If you document a hidden function, you can end up with a hidden Rd file, which
 # a) is missed by R CMD CHECK
@@ -137,7 +188,7 @@ function unescapedPercentWarning {
 }
 
 function roxygenize {
-	Rscript --vanilla -e "if(require(methods) && require(roxygen2)) roxygenize(\"$1\")"
+	Rscript --vanilla --default-packages=roxygen2 -e "roxygenize(\"$1\")"
 }
 
 # Update the Date field in the DESCRIPTION file.
@@ -153,41 +204,57 @@ function test_package {
 	Rscript --vanilla -e "suppressPackageStartupMessages(library(testthat)); suppressPackageStartupMessages(library($pkg)); test_package(\"$pkg\")"
 }
 
+# deploy an R package in .tar.gz format to a host. this uses scp, ssh and R
+# on the host machine.
+# $1 = PKG_BUNDLE name (.tar.gz or .tgz if deploying to OSX)
+# $2 = [username@]host (default=marcow@enzo)
+# $3 = path to R on host
+deploypkg () {
+	PKG_BUNDLE=$1
+	USER_HOST=${2-${USER}@enzo}
+	R=${3-R}
+	[ -f "$PKG_BUNDLE" ] || die "$PKG_BUNDLE does not exist" 101
+	scp $PKG_BUNDLE ${USER_HOST}:/tmp || die "Could not scp bundle across to $HOST" 102
+	ssh ${USER_HOST} "cd /tmp && ${R} --vanilla CMD INSTALL $PKG_BUNDLE && rm $PKG_BUNDLE" || die "Couldn't install bundle on $HOST" 103
+}
+
+
 ################################################################################
 ################################################################################
 ################################################################################
 
 # set default values for arguments
 PACKAGE_PATH=""
-PACKAGE=""
+PACKAGE_NAME="" # set by parsing DESCRIPTION
 PACKAGE_DIR=""
+PACKAGE_VERSION="" # set by parsing DESCRIPTION
 R_LIB=""
 ROXYGENIZE=1
-CHECK=1
+CHECK_SOURCE=1
+CHECK_PACKAGE=1
 SOURCE=1
 BINARY=1
 WINBINARY=1
 INSTALL=1
 TESTTHAT=1
 OPTIONS=""
-HOST=enzo
-HOST_R="/misc/ICGCPancreas/bin/R"
+HOST=""
+HOST_R="R"
 DEPLOY=1
 
 #
 # process the arguments
 #
 if [ $# -eq "0" ]; then
-	usage
-	exit 1
+	die "no arguments found" 1
 fi
 
-while getopts "l:rcsbwhgmoxtid" option; do
+while getopts "l:rcsbwhgmoxCitd:" option; do
 	# echo "Processing option $OPTARG $OPTIND $OPTVAL"
 	case "${option}" in
 		l) R_LIB="${OPTARG}";;
 		r) ROXYGENIZE=0;;
-		c) CHECK=0;;
+		c) CHECK_SOURCE=0;;
 		s) SOURCE=0;;
 		b) BINARY=0;;
 		w) WINBINARY=0;;
@@ -195,9 +262,11 @@ while getopts "l:rcsbwhgmoxtid" option; do
 		m) OPTIONS="${OPTIONS} --no-manual";;
 		o) OPTIONS="${OPTIONS} --no-docs";;
 		x) OPTIONS="${OPTIONS} --no-examples";;
-		t) TESTTHAT=0;;
+		C) CHECK_PACKAGE=0;;
 		i) INSTALL=0;;
-		d) DEPLOY=0;;
+		t) TESTTHAT=0;;
+		d) DEPLOY=0;
+		   HOST=${OPTARG};;
 		h) usage; exit 1;;
 		[?]) usage; exit 1;;
 	esac
@@ -205,10 +274,12 @@ while getopts "l:rcsbwhgmoxtid" option; do
 	shift $((OPTIND-1)); OPTIND=1
 done
 
-if [ $# -ne 1 ]; then
-	echo "Last & only argument must be the /path/to/package"
-	usage
-	exit 10
+if (( $# != 1 )); then
+	if [[ $DEPLOY -eq 0 && -d "$HOST" ]]; then
+		die "You forgot to specify the hostname after -d" 1
+	else
+		die "Last & only argument must be the /path/to/package" 2
+	fi
 fi
 
 if [ $WINBINARY -eq 0 ]; then
@@ -216,33 +287,30 @@ if [ $WINBINARY -eq 0 ]; then
 	WINBINARY=1
 fi
 
+[[ $BINARY -eq 0 && $SOURCE -eq 0 ]] && die "Can only build source (-s) OR binary (-b) packages" 11
+
 # make sure we have pdflatex, otherwise specify --no-manual
 hash pdflatex 2>&- || OPTIONS="${OPTIONS} --no-manual --no-vignettes"
 
 # we need to do at least 1 action
-if [ $ROXYGENIZE -eq 1 -a $CHECK -eq 1 -a $SOURCE -eq 1 -a $BINARY -eq 1 -a $WINBINARY -eq 1 -a $INSTALL -eq 1 -a $TESTTHAT -eq 1 -a $DEPLOY -eq 1 ]; then
-	echo "You must specify at least one action: -r, -c, {-b,-s,-w}, -i, -t, -d"
-	usage
-	exit 10
+if [ $ROXYGENIZE -eq 1 -a $CHECK_SOURCE -eq 1 -a $CHECK_PACKAGE -eq 1 -a $SOURCE -eq 1 -a $BINARY -eq 1 -a $WINBINARY -eq 1 -a $INSTALL -eq 1 -a $TESTTHAT -eq 1 -a $DEPLOY -eq 1 ]; then
+	die "You must specify at least one action: -r, -c, {-b,-s,-w}, -C, -i, -t, -d" 12
 fi
 
 PACKAGE_PATH="$1"
-if [ ! -d "${PACKAGE_PATH}" ]; then
-	echo "Package directory not found. Looking for: '${PACKAGE_PATH}'"
-	exit 2
-fi
-PACKAGE=$(basename ${PACKAGE_PATH})
-PACKAGE_DIR=$(dirname ${PACKAGE_PATH})
-# file to capture the stdout
-OUT=`mktemp -t updateR.XXXXX`
-
-# debug_input && exit
+[[ -d "${PACKAGE_PATH}" ]] || die "Package directory not found. Looking for: '${PACKAGE_PATH}'" 13
 
 ################################################################################
 # Parse the package DESCRIPTION file to determine the package version.
 #
-PKGVERSION=`grep Version "${PACKAGE_DIR}/${PACKAGE}/DESCRIPTION" | sed 's/Version: //'`
-FILE_TO_INSTALL="${PACKAGE}_${PKGVERSION}.tar.gz"
+PACKAGE_DIR=$(dirname ${PACKAGE_PATH})
+PACKAGE_VERSION=`grep ^Version: "${PACKAGE_PATH}/DESCRIPTION" | sed 's/Version: //'`
+PACKAGE_NAME=`grep ^Package: "${PACKAGE_PATH}/DESCRIPTION" | sed 's/Package: //'`
+FILE_TO_INSTALL="${PACKAGE_NAME}_${PACKAGE_VERSION}.tar.gz"
+# file to capture the stdout
+OUT=`mktemp -t updateR.XXXXX`
+
+# debug_input && exit
 
 ################################################################################
 # Update the Date field in the DESCRIPTION file, IF we are performing a modifier
@@ -255,7 +323,7 @@ fi
 # Roygenize the package.
 #
 if [ $ROXYGENIZE -eq 0 ]; then
-	echo "Roxygenizing ${PACKAGE_PATH}..."
+	echo "Roxygenizing ${PACKAGE_NAME}..."
 	RDTMP=`mktemp -d -t updateR.XXXXX`
 
 	# R --vanilla CMD roxygen2 is not supported <yet>
@@ -277,15 +345,12 @@ if [ $ROXYGENIZE -eq 0 ]; then
 	if [ $roxOK -ne 0 ]; then
 		cat >&2 $OUT
 		rm $OUT
-		echo >&2 "roxygenize failed. restoring previous DESCRIPTION, NAMESPACE, Rd files"
-		rm -rf ${PACKAGE_PATH}/man/*Rd ${PACKAGE_PATH}/NAMESPACE ${PACKAGE_PATH}/DESCRIPTION
-		backupRoxygen ${RDTMP} ${PACKAGE_PATH}
-		exit 199
+		restoreRoxygen ${PACKAGE_PATH} ${RDTMP}
+		die "roxygenize failed. restoring previous DESCRIPTION, NAMESPACE, Rd files" 21
 	else
 		if [ $numRd -eq 0 ]; then
 			cat "roxygen created no Rd files. restoring previous DESCRIPTION, NAMESPACE, Rd files"
-			rm -rf ${PACKAGE_PATH}/man/*Rd ${PACKAGE_PATH}/NAMESPACE ${PACKAGE_PATH}/DESCRIPTION
-			backupRoxygen ${RDTMP} ${PACKAGE_PATH}
+			restoreRoxygen ${PACKAGE_PATH} ${RDTMP}
 		else
 			rm -rf ${RDTMP}/man ${RDTMP}/NAMESPACE ${RDTMP}/DESCRIPTION
 			
@@ -295,9 +360,9 @@ if [ $ROXYGENIZE -eq 0 ]; then
 			# % characters in Rd files need to be escaped (\%).
 			# roxygen2 gets this right in the usage section, but not so well in arguments or other
 			# section -- should this be up to the author??
-			perl -pi -e 's/([^\\])%/$1\\%/' ${PACKAGE_PATH}/man/*Rd
+			perl -pi -e 's/([^\\])%/$1\\%/g' ${PACKAGE_PATH}/man/*Rd
 			perl -pi -e 's/^%/\\%/' ${PACKAGE_PATH}/man/*Rd
-			perl -pi -e 's/export\((.*<-)\)/export("$1")/' ${PACKAGE_PATH}/NAMESPACE
+			perl -pi -e 's/export\((.*<-)\)/export("$1")/g' ${PACKAGE_PATH}/NAMESPACE
 		fi
 	fi
 	
@@ -307,17 +372,16 @@ fi
 
 ################################################################################
 # R CMD CHECK The package folder. 
-# @TODO R CMD CHECK on the .tar.gz using --as-cran?
 #
-if [ $CHECK -eq 0 ]; then
-	echo "Checking ${PACKAGE_PATH}..."
+if [ $CHECK_SOURCE -eq 0 ]; then
+	echo "Checking ${PACKAGE_NAME}..."
 
+	cd "$PACKAGE_DIR"
 	R --vanilla CMD check ${OPTIONS} ${PACKAGE_PATH} > $OUT 2>&1
 	if [ $? -ne 0 ]; then
-		echo >&2 "R CMD CHECK failed."
 		cat >&2 $OUT
 		rm $OUT
-		exit 205
+		die "R CMD CHECK failed" 25
 	else
 		rm -rf "${PACKAGE_PATH}.Rcheck"
 
@@ -328,28 +392,19 @@ fi
 
 ################################################################################
 # build the binary package
-# note this is b4 SOURCE, since if user specified both BINARY and SOURCE, I want
-# the SOURCE tar.gz to be installed/tested/deployed.
+# in R 2.14 `R CMD build --binary` was deprecated. Instead `R CMD INSTALL --build`
+# first installs either a source bundle, or source dir, and then creates a
+# tgz binary bundle.
 if [ $BINARY -eq 0 ]; then
-	FILE_TO_INSTALL="${PACKAGE}_${PKGVERSION}.tgz"
-	echo "Building *binary* ${PACKAGE} as ${FILE_TO_INSTALL}..."
+	FILE_TO_INSTALL="${PACKAGE_NAME}_${PACKAGE_VERSION}.tgz"
+	echo "Building *binary* ${PACKAGE_NAME} as ${FILE_TO_INSTALL}..."
 	
 	cd "$PACKAGE_DIR"
-	R --vanilla CMD build $OPTIONS --binary $PACKAGE > $OUT 2>&1
+	R --vanilla CMD INSTALL --build $OPTIONS ${PACKAGE_PATH} > $OUT 2>&1
 	if [ $? -ne 0 ]; then
-		cat $OUT
-		echo "Building *binary* failed; no installation performed"
+		cat >&2 $OUT
 		rm $OUT
-		exit 201
-	fi
-
-	# At some point, on a mac, running "R CMD build --binary ..." created files named
-	# lumidat_1.0_R_i386-apple-darwin9.8.0.tar.gz
-	# rename these to lumidat_1.0.tgz
-	LONGNAME=`find . -maxdepth 1 -type f -name "${PACKAGE}_${PKGVERSION}_R_i386-apple-darwin*.tgz" -print`
-	# LONGNAME="${PACKAGE}_${PKGVERSION}_R_i386-apple-darwin9.8.0.tgz"
-	if [ $LONGNAME ]; then
-		mv -f "$LONGNAME" "$FILE_TO_INSTALL"
+		die "Building *binary* failed; no installation performed" 31
 	fi
 fi
 
@@ -357,32 +412,49 @@ fi
 # build the windows binary package
 # ---- UNSUPPORTED -----
 # if [ $WINBINARY ]; then
-#	echo "Building windows binary ${PACKAGE}..."
+#	echo "Building windows binary ${PACKAGE_NAME}..."
 #	cd "$PACKAGE_DIR"
-#	R --vanilla CMD build --binary $PACKAGE > /dev/stdout
+#	R --vanilla CMD build --binary ${PACKAGE_NAME} > /dev/stdout
 # fi
 
 ################################################################################
 # build the source package
 # 
 if [ $SOURCE -eq 0 ]; then
-	FILE_TO_INSTALL="${PACKAGE}_${PKGVERSION}.tar.gz"
-	echo "Building *source* ${PACKAGE} as ${FILE_TO_INSTALL}..."
+	FILE_TO_INSTALL="${PACKAGE_NAME}_${PACKAGE_VERSION}.tar.gz"
+	echo "Building *source* ${PACKAGE_NAME} as ${FILE_TO_INSTALL}..."
 	cd "$PACKAGE_DIR"
-	R --vanilla CMD build $OPTIONS $PACKAGE > $OUT 2>&1
+	R --vanilla CMD build $OPTIONS ${PACKAGE_PATH} > $OUT 2>&1
 	if [ $? -ne 0 ]; then
 		cat >&2 $OUT
-		echo >&2 "Building *source* failed; no installation performed"
 		rm $OUT
-		exit 200
+		die "Building *source* failed; no installation performed" 35
+	fi
+	if [[ -d "${PACKAGE_DIR}/build" ]]; then
+		rm -rf "${PACKAGE_DIR}/build"
 	fi
 fi
 
 ################################################################################
+# R CMD CHECK The package bundle. 
+#
+if [ $CHECK_PACKAGE -eq 0 ]; then
+	echo "Checking ${FILE_TO_INSTALL}..."
+
+	R --vanilla CMD check ${OPTIONS} --as-cran ${FILE_TO_INSTALL} > $OUT 2>&1
+	if [ $? -ne 0 ]; then
+		cat >&2 $OUT
+		rm $OUT
+		die "R CMD CHECK on bundle failed" 39
+	else
+		rm -rf "${PACKAGE_PATH}.Rcheck"
+	fi
+fi
+################################################################################
 # install the package?
 # 
 if [ $INSTALL -eq 0 ]; then
-	[[ "$FILE_TO_INSTALL" != "" ]] && [[ -e "$FILE_TO_INSTALL" ]] || die "INSTALL is true, but FILE_TO_INSTALL is not set properly"
+	[[ "$FILE_TO_INSTALL" != "" ]] && [[ -e "$FILE_TO_INSTALL" ]] || die "INSTALL is true, but FILE_TO_INSTALL is not set properly" 41
 	echo "Installing ${FILE_TO_INSTALL}..."
 	# install the package: if $R_LIB is undefined, install there, else install to the default
 	if [ -n "$R_LIB" ]; then
@@ -393,7 +465,7 @@ if [ $INSTALL -eq 0 ]; then
 	if [ $? -ne 0 ]; then
 		cat $OUT
 		rm $OUT
-		exit 202
+		die "R CMD INSTALL failed" 43
 	fi
 fi
 
@@ -401,8 +473,8 @@ fi
 # run TESTTHAT suite?
 # 
 if [ $TESTTHAT -eq 0 ]; then
-	echo "Testing ${PACKAGE}..."
-	test_package ${PACKAGE_PATH} || die "package TEST failed"
+	echo "Testing ${PACKAGE_NAME}..."
+	test_package ${PACKAGE_NAME} || die "package TEST failed" 51
 fi
 
 ################################################################################
@@ -410,7 +482,7 @@ fi
 # 
 if [ $DEPLOY -eq 0 ]; then
 	echo "Deploying ${FILE_TO_INSTALL}..."
-	deploypkg ${FILE_TO_INSTALL} $HOST $HOST_R || die "package DEPLOY failed"
+	deploypkg ${FILE_TO_INSTALL} $HOST $HOST_R || die "package DEPLOY failed" 61
 fi
 
 ################################################################################
