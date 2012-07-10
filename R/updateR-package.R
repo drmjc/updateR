@@ -8,12 +8,6 @@
 #' 
 #' Tools for refreshing a currently loaded library are included (\code{\link{relibrary}}).
 #'
-#' If you've ever wanted to send someone a function, only to find that you forgot to also
-#' send the function dependencies? \code{\link{get.function.dependencies}} is a method 
-#' which can trawl through all the function dependencies, retrieve the original source 
-#' definitions, complete with header comments & combine them into a single file, suitable
-#' for sharing.
-#' 
 #' \tabular{ll}{ 
 #' Package: \tab updateR\cr
 #' Type: \tab Package\cr
@@ -28,7 +22,8 @@
 #' @docType package
 #' @author Mark Cowley
 #' Maintainer: Mark Cowley \email{m.cowley@@garvan.org.au}
-#' Acknowledgements: Henrik Bengtsson for writing the original \code{\link{relibrary}} command.
+#' Acknowledgements: Henrik Bengtsson for writing the original \code{\link{relibrary}} command. 
+#' Hadley Wickham for testthat & devtools. Hadley Wickham + Peter Danenberg + Yihui Xie for roxygen2
 #' @seealso \code{\link{updateR}}, \code{\link{mjc2roxygen}}, \code{\link[updateR]{which.package}}, \code{\link{get.function.dependencies}}
 #' @keywords package
 #'
