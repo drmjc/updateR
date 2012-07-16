@@ -108,7 +108,7 @@ die () {
 	msg="######### ABORTING: ${1-Unexpected error}"
 	exitcode=${2-1}
 	echo >&2 "$msg"
-	usage
+	[[ "$3" -ne "1" ]] && usage
 	exit $exitcode
 }
 
@@ -198,11 +198,15 @@ function updatePackageDescriptionDateStamp {
 	perl -pi -e "s/Date: +[0-9].*/Date: $date/" "$1"/DESCRIPTION
 }
 
-# run the testthat suite upon this package.
+# run the testthat suite upon the installed package.
 function test_package {
-	pkg=`basename "$1"`
-	Rscript --vanilla -e "suppressPackageStartupMessages(library(testthat)); suppressPackageStartupMessages(library($pkg)); test_package(\"$pkg\")"
+	# pkg=`basename "$1"`
+	pkg="$1"
+	# Rscript --vanilla --default-packages=testthat -e "suppressPackageStartupMessages(require($pkg)) || stop(\"$pkg is not installed\"); test_package(\"$pkg\")"
+	# TODO: update evaluate to Import the appropriate packages
+	Rscript --vanilla --default-packages=grDevices,utils,methods,testthat,$1 -e "test_package(\"$1\")"
 }
+
 
 # deploy an R package in .tar.gz format to a host. this uses scp, ssh and R
 # on the host machine.
@@ -474,7 +478,7 @@ fi
 # 
 if [ $TESTTHAT -eq 0 ]; then
 	echo "Testing ${PACKAGE_NAME}..."
-	test_package ${PACKAGE_NAME} || die "package TEST failed" 51
+	test_package ${PACKAGE_NAME} || die "package TEST failed" 51 1
 fi
 
 ################################################################################
