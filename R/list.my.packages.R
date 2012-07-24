@@ -1,9 +1,9 @@
 #' List my R packages which all sit inside src.root
 #'
-#' Parameters:
 #' @param src.root The root folder containing all R package code.
 #' @param maxdepth do you only want to look into the folder 1 below src.root, or further? defaults to 1.
 #' @param only.installed if TRUE, then only return packages which are also installed. if FALSE, then all candidate packages are returned.
+#' 
 #' @return A vector of package names
 #' @author Mark Cowley, 2011-04-07
 #' @export

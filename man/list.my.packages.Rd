@@ -20,7 +20,7 @@
   A vector of package names
 }
 \description{
-  Parameters:
+  List my R packages which all sit inside src.root
 }
 \examples{
 list.my.packages()
