@@ -8,12 +8,17 @@
 #' @param src.root The parent folder of source code
 #' @param src.files an optional vector of filenames to search within
 #' @param exclude.patterns vector of patterns passed to grep for files to exclude
-#' @param unique logical: If TRUE then at most 1 file path is returned; if FALSE, all matching
+#' @param unique logical: If \code{TRUE} then at most 1 file path is returned; if \code{FALSE}, all matching
 #'   filepaths are returned
-#' @return a vector of file paths, 
+#' @param exclude.symlinks logical: if \code{TRUE}, then only report files which are not
+#'  symbolic links.
+#' 
+#' @return a vector of file paths
+#' 
 #' @author Mark Cowley
 #' @export
-find.src.file <- function(func, src.root=getOption("src.root"), src.files=NULL, exclude.patterns=c("~", ".Rcheck", ".git", ".svn"), unique=TRUE) {
+#' @importFrom mjcbase file.issymlink
+find.src.file <- function(func, src.root=getOption("src.root"), src.files=NULL, exclude.patterns=c("~", ".Rcheck", ".git", ".svn"), unique=TRUE, exclude.symlinks=TRUE) {
 	if ( !is.character(func) )
 		func <- as.character(substitute(func))
 	# if this is a setter, eg 'colclasses<-' then the func name is quoted
@@ -25,7 +30,7 @@ find.src.file <- function(func, src.root=getOption("src.root"), src.files=NULL, 
 	# grep and ack don't mind mixes of trailing dirs and files.
 	locations <- c(src.root, src.files)
 	!is.null(locations) || stop("Must specify at least one of src.root and src.files.")
-	locations <- shQuote(get.full.path(locations))
+	locations <- shQuote(normalizePath(locations))
 	locations <- paste(locations, collapse=" ")
 
 	cmd <- paste("grep -l -R", shQuote(pattern), locations)
@@ -43,8 +48,15 @@ find.src.file <- function(func, src.root=getOption("src.root"), src.files=NULL, 
 				files <- files[-grep(pattern, files)]
 		}
 	}
-	
-	if( unique && length(files) > 1 ) files <- files[1]
+
+	if( exclude.symlinks ) {
+		symlinks <- file.issymlink(files)
+		files <- files[!symlinks]
+	}
+
+	if( unique && length(files) > 1 ) {
+		files <- files[1]
+	}
 	
 	files
 }
@@ -55,7 +67,7 @@ find.src.file <- function(func, src.root=getOption("src.root"), src.files=NULL, 
 # 2011-04-20: added unique parameter.
 # 2011-04-20: added support for ack.
 # 2011-06-21: added src.files arg
-
+# 2012-07-24: added exclude.symlinks code
 
 #' Find the source file for a given function.
 #' This is a wrapper around \code{\link{find.src.file}}
