@@ -21,7 +21,7 @@
 #' will get this error:\cr
 #' \dQuote{\code{Error in fetch(key) : internal error -3 in R_decompress1}}
 #' I've confirmed with Rdevel (2012-01-27) that it is impossible to work around
-#' this error... you have to restart your R session.\cr
+#' this error\dots you have to restart your R session.\cr
 #' Prof Ripley: \dQuote{This is simply not supported.  Lazy-load databases are cached, and you
 #' cannot expect to change them during the R session once they have been used.}
 #' More info, including 3 suggestions here:
