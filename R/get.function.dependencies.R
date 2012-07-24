@@ -22,18 +22,21 @@
 #'   packages that you probably wrote), Include \code{.GlobalEnv} if you want
 #'   to trace inside functions which may be loaded in the workspace.
 #' @param verbose print the recursive dependency trace
+#' 
 #' @return A list with these elements: 
 #'   \item{my.functions}{a character vector of all functions that are called, 
 #'       that are also in the \code{my.packages} packages}
 #'   \item{my.function.packages}{a vector indicating which package each function came from} 
 #'   \item{cran}{a vector of CRAN packages that are referenced} 
 #'   \item{bioc}{a vector of BioConductor packages that are referenced} 
-#'   \item{other.packages:}{a vector of other packages not from CRAN, or 
-#'       BioConductor, or my.packages.}
+#'   \item{other.packages}{a vector of other packages not from CRAN, or 
+#'       BioConductor, or my.packages}
+#' 
 #' @author Mark Cowley
 #' @seealso \code{\link[codetools]{findGlobals}}, \code{\link{list.my.packages}}
 #' @keywords utilities
 #' @export
+#' 
 #' @examples
 #' options(src.root="~/src/R")
 #' get.function.dependencies("updateR")

@@ -25,8 +25,8 @@
   package each function came from} \item{cran}{a vector of
   CRAN packages that are referenced} \item{bioc}{a vector
   of BioConductor packages that are referenced}
-  \item{other.packages:}{a vector of other packages not
-  from CRAN, or BioConductor, or my.packages.}
+  \item{other.packages}{a vector of other packages not from
+  CRAN, or BioConductor, or my.packages}
 }
 \description{
   For a given function, exhaustively determine which
