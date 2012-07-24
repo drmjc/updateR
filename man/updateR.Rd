@@ -7,8 +7,8 @@
     check.source = FALSE, source = TRUE, binary = FALSE,
     winbinary = FALSE, no.vignettes = FALSE,
     no.manual = FALSE, no.docs = FALSE,
-    check.bundle = FALSE, install = TRUE, test = FALSE,
-    deploy = NULL, no.examples = FALSE)
+    no.examples = FALSE, check.bundle = FALSE,
+    install = TRUE, test = FALSE, deploy = NULL)
 }
 \arguments{
   \item{package}{the name of the package to be updated.
@@ -36,15 +36,6 @@
   \item{winbinary}{logical: Build a windows binary
   package?}
 
-  \item{install}{logical: \code{R CMD INSTALL} the
-  package?}
-
-  \item{test}{logical: run a
-  \code{testthat::\link[testthat]{test_package}} suite, on
-  the installed version of the package? Note this is done
-  after this function is given the opportunity to install
-  the package.}
-
   \item{deploy}{either \code{NULL}, or the hostname to SCP
   and R CMD INSTALL the package bundle to.  see details.}
 
@@ -56,6 +47,22 @@
 
   \item{no.docs}{logical: if \dQuote{TRUE}, turn off the
   creation of documentation}
+
+  \item{no.examples}{logical: if \dQuote{TRUE}, turn off
+  the CHECK-ing of examples during \code{check.bundle} and
+  \code{check.source}}
+
+  \item{check.bundle}{logical: \code{R CMD CHECK --as-cran}
+  the package bundle after building it?}
+
+  \item{install}{logical: \code{R CMD INSTALL} the
+  package?}
+
+  \item{test}{logical: run a
+  \code{testthat::\link[testthat]{test_package}} suite, on
+  the installed version of the package? Note this is done
+  after this function is given the opportunity to install
+  the package.}
 }
 \description{
   This function can be used to roxygenize, check source,
@@ -74,8 +81,8 @@
   typical package development cycle, which are supported by
   updateR:\cr roxygenize mypackage (\code{roxygenize})\cr R
   CMD CHECK mypackage (\code{check.source})\cr R CMD BUILD
-  --binary mypackage (binary)\cr R CMD BUILD mypackage
-  (source)\cr R CMD CHECK mypackage.tar.gz
+  mypackage (source)\cr R CMD INSTALL --binary mypackage
+  (binary)\cr R CMD CHECK mypackage.tar.gz
   (\code{check.bundle})\cr R CMD INSTALL mypackage.tar.gz
   (\code{install})\cr testthat::test_package("mypackage")
   (\code{test})\cr reload package in current \R session
@@ -107,7 +114,9 @@
   \code{R CMD CHECK} is run either on the source code
   (\code{check.source}), or the built package bundle
   (\code{check.source}). In the latter case, \code{R CMD
-  CHECK --as-cran} is used.
+  CHECK --as-cran} is used. The tests which are OK are
+  hidden from the user; only the notes, warnings and errors
+  are printed.
 }
 
 \section{INSTALLing}{

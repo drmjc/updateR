@@ -11,8 +11,8 @@
 #' These are the steps during a typical package development cycle, which are supported by updateR:\cr
 #' roxygenize mypackage (\code{roxygenize})\cr
 #' R CMD CHECK mypackage (\code{check.source})\cr
-#' R CMD BUILD --binary mypackage (binary)\cr
 #' R CMD BUILD mypackage (source)\cr
+#' R CMD INSTALL --binary mypackage (binary)\cr
 #' R CMD CHECK mypackage.tar.gz (\code{check.bundle})\cr
 #' R CMD INSTALL mypackage.tar.gz (\code{install})\cr
 #' testthat::test_package("mypackage") (\code{test})\cr
@@ -36,7 +36,8 @@
 #'
 #' @section CHECKing:
 #' \code{R CMD CHECK} is run either on the source code (\code{check.source}), or the built package bundle (\code{check.source}).
-#' In the latter case, \code{R CMD CHECK --as-cran} is used.
+#' In the latter case, \code{R CMD CHECK --as-cran} is used. The tests which are OK are hidden from
+#' the user; only the notes, warnings and errors are printed.
 #' 
 #' @section INSTALLing:
 #' R CMD INSTALL will be run as the current user, thus the package will be installed to the typical
@@ -89,18 +90,22 @@
 #'   is the package that will be installed.
 #' @param binary logical: Build a binary package?
 #' @param winbinary logical: Build a windows binary package?
-#' @param install logical: \code{R CMD INSTALL} the package?
-#' @param test logical: run a \code{testthat::\link[testthat]{test_package}} suite, 
-#'   on the installed version of the package? Note this is done after this function
-#'   is given the opportunity to install the package.
 #' @param deploy either \code{NULL}, or the hostname to SCP and R CMD INSTALL the package bundle to. 
 #'   see details.
 #' @param no.vignettes logical: if \dQuote{TRUE}, turn off the creation of vignettes
 #' @param no.manual logical: if \dQuote{TRUE}, turn off the creation of PDF manuals
 #' @param no.docs logical: if \dQuote{TRUE}, turn off the creation of documentation
+#' @param no.examples logical: if \dQuote{TRUE}, turn off the CHECK-ing of examples during 
+#'  \code{check.bundle} and \code{check.source}
+#' @param check.bundle logical: \code{R CMD CHECK --as-cran} the package bundle after building it?
+#' @param install logical: \code{R CMD INSTALL} the package?
+#' @param test logical: run a \code{testthat::\link[testthat]{test_package}} suite, 
+#'   on the installed version of the package? Note this is done after this function
+#'   is given the opportunity to install the package.
 #' 
 #' @export
 #' @importFrom devtools reload
+#' @importFrom mjcbase trim
 #' 
 #' @seealso \code{\link{relibrary}}, \code{\link[roxygen2]{roxygenize}}, \code{\link[testthat]{test_package}}, \code{\link{.Rprofile}}, \code{\link{install.packages}}
 #' @author Mark Cowley
@@ -121,12 +126,14 @@ updateR <- function(package, src.root=getOption("src.root"), lib.loc=NULL, warn.
 	source=TRUE,
 	binary=FALSE,
 	winbinary=FALSE, 
-	no.vignettes=FALSE, no.manual=FALSE, no.docs=FALSE, 
+	no.vignettes=FALSE,
+	no.manual=FALSE,
+	no.docs=FALSE,
+	no.examples=FALSE, 
 	check.bundle=FALSE,
 	install=TRUE,
 	test=FALSE,
-	deploy=NULL,
-	no.examples=FALSE
+	deploy=NULL
 	) {
 
 	################################################################################
@@ -219,7 +226,7 @@ updateR <- function(package, src.root=getOption("src.root"), lib.loc=NULL, warn.
 #             uses devtools::reload to reload the package
 # 2012-04-05: added -d flag for DEPLOY to enzo.
 # 			  tidied code
-#             added @importFrom
+#             added @@importFrom
 # 2012-05-02: reload needs the path to the package, not the package name. 
 #             I think this coincides with an update made within R 2.14
 # 2012-06-14: 
