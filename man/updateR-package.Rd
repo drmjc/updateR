@@ -32,7 +32,8 @@
   Yihui Xie for roxygen2
 }
 \seealso{
-  \code{\link{updateR}}, \code{\link{mjc2roxygen}},
+  \code{\link{updateR}},
+  \code{\link[R2roxygen]{mjc2roxygen}},
   \code{\link[updateR]{which.package}},
   \code{\link{get.function.dependencies}}
 }

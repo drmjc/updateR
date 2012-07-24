@@ -24,7 +24,7 @@
 #' Maintainer: Mark Cowley \email{m.cowley@@garvan.org.au}
 #' Acknowledgements: Henrik Bengtsson for writing the original \code{\link{relibrary}} command. 
 #' Hadley Wickham for testthat & devtools. Hadley Wickham + Peter Danenberg + Yihui Xie for roxygen2
-#' @seealso \code{\link{updateR}}, \code{\link{mjc2roxygen}}, \code{\link[updateR]{which.package}}, \code{\link{get.function.dependencies}}
+#' @seealso \code{\link{updateR}}, \code{\link[R2roxygen]{mjc2roxygen}}, \code{\link[updateR]{which.package}}, \code{\link{get.function.dependencies}}
 #' @keywords package
 #'
 NULL
