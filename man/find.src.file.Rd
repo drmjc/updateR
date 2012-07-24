@@ -5,7 +5,7 @@
   find.src.file(func, src.root = getOption("src.root"),
     src.files = NULL,
     exclude.patterns = c("~", ".Rcheck", ".git", ".svn"),
-    unique = TRUE)
+    unique = TRUE, exclude.symlinks = TRUE)
 }
 \arguments{
   \item{func}{a function name, or function's code}
@@ -18,12 +18,15 @@
   \item{exclude.patterns}{vector of patterns passed to grep
   for files to exclude}
 
-  \item{unique}{logical: If TRUE then at most 1 file path
-  is returned; if FALSE, all matching filepaths are
-  returned}
+  \item{unique}{logical: If \code{TRUE} then at most 1 file
+  path is returned; if \code{FALSE}, all matching filepaths
+  are returned}
+
+  \item{exclude.symlinks}{logical: if \code{TRUE}, then
+  only report files which are not symbolic links.}
 }
 \value{
-  a vector of file paths,
+  a vector of file paths
 }
 \description{
   Given a directory of R packages under development (under
