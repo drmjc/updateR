@@ -16,6 +16,7 @@
 # the Date in the DESCRIPTION file is auto-updated
 # you can turn off the creation of manuals & vignettes for speed
 # you can turn off exmaple testing in the CHECK's
+# R CMD CHECK hides the results of the 'OK' tests & only shows the Notes, Warnings & Errors
 # it's svn friendly
 # -- ie it doesn't go building in different locations & killing the svn history
 # you can build source and binary packages simultaneously
@@ -54,6 +55,7 @@
 #             only allow BINARY (-b) or SOURCE (-s), not both.
 #             simplified roxygenize()
 #             delete pkname/build folders which are created at BUILD time, when \Sexpr's are found
+# 2012-07-18: allow the R CMD CHECK's to print notes and warnings
 ################################################################################
 
 ################################################################################
@@ -81,9 +83,10 @@ usage () {
 usage:
     updateR.sh -h
     updateR.sh [options] </path/to/package>
-    updateR.sh [-l </usr/local/R/library>] [-r] [-c] [-x] [-s] [-b] [-w] [-g] [-m] [-C] [-i] [-t] [-d username@hostname] </path/to/package>
+    updateR.sh [-l </usr/local/R/library>] [-v] [-r] [-c] [-x] [-s] [-b] [-w] [-g] [-m] [-C] [-i] [-t] [-d username@hostname] </path/to/package>
 
 OPTIONS
+-v: verbose
 -r: roxygenize the package source code.
 -c: R CMD CHECK the package source code.
 -s: build source package. -s,-b are mutually exclusive
@@ -314,6 +317,8 @@ FILE_TO_INSTALL="${PACKAGE_NAME}_${PACKAGE_VERSION}.tar.gz"
 # file to capture the stdout
 OUT=`mktemp -t updateR.XXXXX`
 
+echo "* this is package '$PACKAGE_NAME' version '$PACKAGE_VERSION'"
+
 # debug_input && exit
 
 ################################################################################
@@ -378,14 +383,15 @@ fi
 # R CMD CHECK The package folder. 
 #
 if [ $CHECK_SOURCE -eq 0 ]; then
-	echo "Checking ${PACKAGE_NAME}..."
+	echo "Checking *source* ${PACKAGE_NAME}..."
 
 	cd "$PACKAGE_DIR"
-	R --vanilla CMD check ${OPTIONS} ${PACKAGE_PATH} > $OUT 2>&1
-	if [ $? -ne 0 ]; then
+	R --vanilla CMD check ${OPTIONS} ${PACKAGE_PATH} 2>&1 | tee $OUT | egrep -v "OK$|^\* using|^\* checking extension type ... Package|^\* this is package"
+	grep "ERROR" $OUT >/dev/null
+	if [ $? -eq 0 ]; then
 		cat >&2 $OUT
 		rm $OUT
-		die "R CMD CHECK failed" 25
+		die "R CMD CHECK failed" 25 1
 	else
 		rm -rf "${PACKAGE_PATH}.Rcheck"
 
@@ -408,7 +414,7 @@ if [ $BINARY -eq 0 ]; then
 	if [ $? -ne 0 ]; then
 		cat >&2 $OUT
 		rm $OUT
-		die "Building *binary* failed; no installation performed" 31
+		die "Building *binary* failed; no installation performed" 31 1
 	fi
 fi
 
@@ -432,7 +438,7 @@ if [ $SOURCE -eq 0 ]; then
 	if [ $? -ne 0 ]; then
 		cat >&2 $OUT
 		rm $OUT
-		die "Building *source* failed; no installation performed" 35
+		die "Building *source* failed; no installation performed" 35 1
 	fi
 	if [[ -d "${PACKAGE_DIR}/build" ]]; then
 		rm -rf "${PACKAGE_DIR}/build"
@@ -443,13 +449,14 @@ fi
 # R CMD CHECK The package bundle. 
 #
 if [ $CHECK_PACKAGE -eq 0 ]; then
-	echo "Checking ${FILE_TO_INSTALL}..."
+	echo "Checking *bundle* ${FILE_TO_INSTALL}..."
 
-	R --vanilla CMD check ${OPTIONS} --as-cran ${FILE_TO_INSTALL} > $OUT 2>&1
-	if [ $? -ne 0 ]; then
+	R --vanilla CMD check ${OPTIONS} --as-cran ${FILE_TO_INSTALL} 2>&1 | tee $OUT | egrep -v "OK$|^\* using|^\* checking extension type ... Package|^\* this is package"
+	grep "ERROR" $OUT >/dev/null
+	if [ $? -eq 0 ]; then
 		cat >&2 $OUT
 		rm $OUT
-		die "R CMD CHECK on bundle failed" 39
+		die "R CMD CHECK on bundle failed" 39 1
 	else
 		rm -rf "${PACKAGE_PATH}.Rcheck"
 	fi
@@ -469,7 +476,7 @@ if [ $INSTALL -eq 0 ]; then
 	if [ $? -ne 0 ]; then
 		cat $OUT
 		rm $OUT
-		die "R CMD INSTALL failed" 43
+		die "R CMD INSTALL failed" 43 1
 	fi
 fi
 
