@@ -12,7 +12,7 @@
 #' development. In this case, set \code{src.root}, or better yet, the
 #' \code{options(src.root="/path/to/source/root")} to point to the top level
 #' folder containing all the R packages. 
-#' If you also have a directory full of .R files, then you can provide these
+#' If you also have a number of .R source files, then you can provide these
 #' files via the \code{src.files} argument.
 #' 
 #' @param func the quoted function name, or the function's code
@@ -39,7 +39,7 @@ edit.src.file <- function(func, src.root=getOption("src.root"), src.files=NULL, 
 	f <- find.src.file(func, src.root, src.files, exclude.patterns=exclude.patterns)
 	if( length(f) > 0 ) {
 		pattern <- paste("^", func, " <- function", sep="")
-		line <- system( paste("grep -n", shQuote(pattern), shQuote(get.full.path(f))), intern=T )
+		line <- system( paste("grep -n", shQuote(pattern), shQuote(normalizePath(f))), intern=T )
 		lineno <- as.numeric( strsplit(line, ":")[[1]][1] )
 		system( paste(editor, shQuote(f), " >/dev/null 2>/dev/null &") )
 

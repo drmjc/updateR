@@ -57,7 +57,7 @@
   \code{src.root}, or better yet, the
   \code{options(src.root="/path/to/source/root")} to point
   to the top level folder containing all the R packages. If
-  you also have a directory full of .R files, then you can
+  you also have a number of .R source files, then you can
   provide these files via the \code{src.files} argument.
 }
 \examples{
