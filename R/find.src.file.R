@@ -34,8 +34,8 @@ find.src.file <- function(func, src.root=getOption("src.root"), src.files=NULL, 
 	locations <- paste(locations, collapse=" ")
 
 	cmd <- paste("grep -l -R", shQuote(pattern), locations)
-	# ack is a MUCH faster version of grep & should be used if its available.
-	if(nzchar(Sys.which("ack"))) cmd <- sub("^grep", "ack", cmd)
+	# ack is a MUCH faster version of grep & should be used if its available (ensure that at least '--type-set=R=.R' is inside $HOME/.ackrc)
+	if(nzchar(Sys.which("ack"))) cmd <- sub("^grep", "ack --type R", cmd)
 	
 	suppressWarnings( files <- system(cmd, intern=TRUE) ) # if no file is found, then a warning is generated.
 	
