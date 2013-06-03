@@ -190,8 +190,9 @@ function unescapedPercentWarning {
 	fi
 }
 
+# extra default-packages allow this to work under R >= 2.12
 function roxygenize {
-	Rscript --vanilla --default-packages=roxygen2 -e "roxygenize(\"$1\")"
+	Rscript --vanilla --default-packages=roxygen2,utils,stats,methods -e "roxygenize(\"$1\")"
 }
 
 # Update the Date field in the DESCRIPTION file.
@@ -246,7 +247,7 @@ INSTALL=1
 TESTTHAT=1
 OPTIONS=""
 HOST=""
-HOST_R="R"
+HOST_R="R-2.13.1"
 DEPLOY=1
 
 #
