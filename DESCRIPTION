@@ -11,7 +11,7 @@ Description: A collection of functions that enable R
     refreshing a currently loaded library are included.
 Version: 1.1.3
 URL: http://github.com/drmjc/updateR
-Date: 2013-06-03
+Date: 2013-09-09
 Depends:
     R (>= 2.13.0),
     codetools,
