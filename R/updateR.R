@@ -235,4 +235,5 @@ updateR <- function(package, src.root=getOption("src.root"), lib.loc=NULL, warn.
 # 2012-07-10: changed deploy from logical to NULL, or [username@]hostname.
 #             major documentation improvements.
 #             updated updateR.sh to grab the PACKAGE_NAME from the DESCRIPTION file.
+# 2013-08-26: R CMD INSTALL now uses --no-multiarch. see 'sh' code for user visible changes.
 # 

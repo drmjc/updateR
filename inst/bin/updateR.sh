@@ -56,6 +56,11 @@
 #             simplified roxygenize()
 #             delete pkname/build folders which are created at BUILD time, when \Sexpr's are found
 # 2012-07-18: allow the R CMD CHECK's to print notes and warnings
+# 2013-07-29: update HOST_R to R-2.15.2; Default HOST = gamma00
+#             update deploypkg to check if HOST_R is available
+#             added -v & $VERBOSE variables (to match the OPTIONS as documented)
+# 2013-08-26: enforce R CMD INSTALL --no-multiarch. TODO: allow this to be toggled via cmd line.
+# 
 ################################################################################
 
 ################################################################################
@@ -215,15 +220,25 @@ function test_package {
 # deploy an R package in .tar.gz format to a host. this uses scp, ssh and R
 # on the host machine.
 # $1 = PKG_BUNDLE name (.tar.gz or .tgz if deploying to OSX)
-# $2 = [username@]host (default=marcow@enzo)
+# $2 = [username@]host (default=marcow@gamma00)
 # $3 = path to R on host
 deploypkg () {
 	PKG_BUNDLE=$1
-	USER_HOST=${2-${USER}@enzo}
+	USER_HOST=${2-${USER}@gamma00}
 	R=${3-R}
 	[ -f "$PKG_BUNDLE" ] || die "$PKG_BUNDLE does not exist" 101
-	scp $PKG_BUNDLE ${USER_HOST}:/tmp || die "Could not scp bundle across to $HOST" 102
-	ssh ${USER_HOST} "cd /tmp && ${R} --vanilla CMD INSTALL $PKG_BUNDLE && rm $PKG_BUNDLE" || die "Couldn't install bundle on $HOST" 103
+
+	cmd="ssh ${USER_HOST} \"which $R\""
+	[[ $VERBOSE -eq 0 ]] && echo $cmd
+	eval "$cmd" > /dev/null || die "Could not find R on remote host" 104
+
+	cmd="scp $PKG_BUNDLE ${USER_HOST}:/tmp"
+	[[ $VERBOSE -eq 0 ]] && echo $cmd
+	eval "$cmd" || die "Could not scp bundle across to $HOST" 102
+
+	cmd="ssh ${USER_HOST} \"cd /tmp && ${R} --vanilla CMD INSTALL $PKG_BUNDLE && rm $PKG_BUNDLE\""
+	[[ $VERBOSE -eq 0 ]] && echo $cmd
+	eval "$cmd" || die "Couldn't install bundle on $HOST" 103
 }
 
 
@@ -247,8 +262,10 @@ INSTALL=1
 TESTTHAT=1
 OPTIONS=""
 HOST=""
-HOST_R="R-2.13.1"
+HOST_R="/share/ClusterShare/software/contrib/marcow/R/2.15.2/bin/R"
 DEPLOY=1
+VERBOSE=1
+MULTIARCH="--no-multiarch"
 
 #
 # process the arguments
@@ -257,7 +274,7 @@ if [ $# -eq "0" ]; then
 	die "no arguments found" 1
 fi
 
-while getopts "l:rcsbwhgmoxCitd:" option; do
+while getopts "l:rcsbwhgmoxCitvd:" option; do
 	# echo "Processing option $OPTARG $OPTIND $OPTVAL"
 	case "${option}" in
 		l) R_LIB="${OPTARG}";;
@@ -273,6 +290,7 @@ while getopts "l:rcsbwhgmoxCitd:" option; do
 		C) CHECK_PACKAGE=0;;
 		i) INSTALL=0;;
 		t) TESTTHAT=0;;
+		v) VERBOSE=0;;
 		d) DEPLOY=0;
 		   HOST=${OPTARG};;
 		h) usage; exit 1;;
@@ -470,9 +488,9 @@ if [ $INSTALL -eq 0 ]; then
 	echo "Installing ${FILE_TO_INSTALL}..."
 	# install the package: if $R_LIB is undefined, install there, else install to the default
 	if [ -n "$R_LIB" ]; then
-		R --vanilla CMD INSTALL -l $R_LIB $FILE_TO_INSTALL > $OUT 2>&1
+		R --vanilla CMD INSTALL $MULTIARCH -l $R_LIB $FILE_TO_INSTALL > $OUT 2>&1
 	else
-		R --vanilla CMD INSTALL $FILE_TO_INSTALL > $OUT 2>&1
+		R --vanilla CMD INSTALL $MULTIARCH $FILE_TO_INSTALL > $OUT 2>&1
 	fi
 	if [ $? -ne 0 ]; then
 		cat $OUT
